@@ -31,11 +31,14 @@ class PHPTv
 	 */
 	private function repo($name)
 	{
-		return $this->container->get($name);
+		return $this->container->get('repo.'.$name);
 	}
 
 	/**
 	 * Connect to the TV
+	 * 
+	 * The naming pretty wrong here, we actually just make the initial request to check 
+	 * if a TV is present.
 	 */
 	public function connect()
 	{
@@ -51,8 +54,9 @@ class PHPTv
 	    }
 
 	    $this->cli->info('Success!');
+	    $this->cli->br();
 
-	    $this->cli->out(count($protocols) . ' service protocols are available: ');
+	    $this->cli->blue(count($protocols) . ' service protocols are available: ');
 
 	    $protocolNames = [];
 	    foreach($protocols as $p) {
@@ -60,5 +64,45 @@ class PHPTv
 	    }
 
 	    $this->cli->columns($protocolNames);
+
+	    // continue with the device infos
+	    $this->showDeviceInfos();
+
+	    // enter cms loop
+	   	$this->startCMDLoop();
+	}
+
+	/**
+	 * Show device information
+	 */
+	public function showDeviceInfos()
+	{
+		$this->cli->br();
+
+		$this->cli->blue('TV Interface:');
+		$infos = $this->repo('system')->getInterfaceInformation();
+
+		// show system infos
+		$this->cli->columns($infos[0]);
+	}
+
+	/**
+	 * Enter the command loop 
+     */
+	public function startCMDLoop()
+	{
+		$ircc = $this->repo('IRCC');
+		$ircc->refreshAvailableCommands();
+
+		$this->cli->br();
+		$this->cli->blue('Available commands:');
+		$this->cli->columns($ircc->getAvailableCommands());
+
+		$input = $this->cli->input('> ');
+
+		while (1) 
+		{
+			$ircc->send(ucfirst($input->prompt()));
+		}
 	}
 }

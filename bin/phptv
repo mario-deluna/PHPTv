@@ -70,8 +70,10 @@ $container->bind('client', \PHPTv\Client::class)
 // bind the repositories
 foreach([
     'guide' => \PHPTv\Guide::class,
+    'system' => \PHPTv\System::class,
+    'IRCC' => \PHPTv\IRCC::class,
 ] as $name => $className) {
-    $container->bind($name, $className)->arguments(['@client']);
+    $container->bind('repo.'.$name, $className)->arguments(['@client']);
 }
 
 

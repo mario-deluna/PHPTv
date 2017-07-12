@@ -13,6 +13,11 @@ class IRCC
 	 */
 	protected $availableCommands = [];
 
+	public function getAvailableCommands() : array
+	{
+		return $this->availableCommands;
+	}
+
 	/**
 	 * Load the remote infos from the TV Api
 	 * 
