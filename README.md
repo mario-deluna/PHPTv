@@ -1,3 +1,7 @@
+<p align="center"><a href="http://clancats.io/mario-deluna/phptv/" target="_blank">
+    <img width="100px" src="https://user-images.githubusercontent.com/956212/28140686-a732b15c-6759-11e7-81ed-5a7968ff1e14.png">
+</a></p>
+
 # PHPTv
 
 A Command-Line Remote control for Sony Bravia Android TV written in PHP.
