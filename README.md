@@ -11,3 +11,6 @@ It was one of those evenings where I could not find the fu****g remote for my TV
 This is an absolute "just for fun" and "because I can" project. You will be off much faster just using the normal Remote.
 
 Well, I hope I find a way to directly jump to let's say a Netflix show then this might even become useful.
+
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
+[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)]()
