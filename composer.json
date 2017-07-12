@@ -1,0 +1,15 @@
+{
+	"name": "mario-deluna/phptv",
+	"description": "PHP Remote control for Sony Android TVs.",
+	"license": "MIT",
+	"require": {
+		"php": ">=7.0",
+		"league/climate": "dev-master"
+	},
+	"autoload": {
+        "psr-4": {
+        	"PHPTv\\": "src/"
+        }
+    },
+	"minimum-stability": "dev"
+}

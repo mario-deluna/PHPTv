@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php 
+
+require "vendor/autoload.php";
+
+// import PHPTv
+use PHPTv\{
+	Client,
+	IRCC
+};
+
+// import Climate
+use League\CLImate\{
+	CLImate
+};
+
+// create a climate instance
+$cli = new CLImate;
+
+// configure the available arguments
+$cli->arguments->add([
+
+	'endpoint' => [
+        'description' => 'Your TVs IPv4 address.',
+        'required'    => true,
+    ],
+
+    'psk' => [
+        'description' => 'Your TVs Pre-Shared Key (PSK). You can set the key under: Settings -> Network -> Home network setup -> ip control. There you have to enable the "Pre-Shared" Authentication.',
+        'required'    => true,
+    ],
+]);
+
+// check if everything that we need is there..
+try {
+	$cli->arguments->parse();
+} catch(Exception $e) {
+	$cli->usage(); die;
+}
+
+// create the client
+$client = new Client($cli->arguments->get('endpoint'), $cli->arguments->get('psk'));
+
+
+$ircc = new IRCC($client);
+$ircc->refreshAvailableCommands();
+
+var_dump($ircc);
