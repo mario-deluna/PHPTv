@@ -3,16 +3,16 @@
 
 require "vendor/autoload.php";
 
-// import PHPTv
-use PHPTv\{
-	Client,
-	IRCC
-};
-
 // import Climate
 use League\CLImate\{
 	CLImate
 };
+
+/**
+ * Prepare the CLI 
+ * 
+ * ---------------------------------------------------------------------
+ */
 
 // create a climate instance
 $cli = new CLImate;
@@ -38,11 +38,49 @@ try {
 	$cli->usage(); die;
 }
 
-// create the client
-$client = new Client($cli->arguments->get('endpoint'), $cli->arguments->get('psk'));
+// show start screen
+$cli->out('                                        
+<green>88888888ba  88        88 88888888ba </green><blue>888888888888         </blue>
+<green>88      "8b 88        88 88      "8b</green><blue>     88              </blue>
+<green>88      ,8P 88        88 88      ,8P</green><blue>     88              </blue>
+<green>88aaaaaa8P\' 88aaaaaaaa88 88aaaaaa8P\'</green><blue>     88 8b       d8  </blue>
+<green>88""""""\'   88""""""""88 88""""""\'</green><blue>       88 `8b     d8\'  </blue>
+<green>88          88        88 88         </green><blue>     88  `8b   d8\'   </blue>
+<green>88          88        88 88         </green><blue>     88   `8b,d8\'    </blue>
+<green>88          88        88 88         </green><blue>     88     "8"</blue>
+');
+
+/**
+ * Build the container
+ * 
+ * ---------------------------------------------------------------------
+ */
+
+// build the container
+$container = new \ClanCats\Container\Container;
+
+// set the parameters
+$container->setParameter('endpoint', $cli->arguments->get('endpoint'));
+$container->setParameter('psk', $cli->arguments->get('psk'));
+
+// bind the api client
+$container->bind('client', \PHPTv\Client::class)
+    ->arguments([':endpoint', ':psk']);
+
+// bind the repositories
+foreach([
+    'guide' => \PHPTv\Guide::class,
+] as $name => $className) {
+    $container->bind($name, $className)->arguments(['@client']);
+}
 
 
-$ircc = new IRCC($client);
-$ircc->refreshAvailableCommands();
+/**
+ * Srart PHP Tv 
+ * 
+ * ---------------------------------------------------------------------
+ */
+$tv = new PHPTv\PHPTv($container, $cli);
 
-var_dump($ircc);
+// connect
+$tv->connect();

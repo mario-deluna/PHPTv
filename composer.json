@@ -4,7 +4,8 @@
 	"license": "MIT",
 	"require": {
 		"php": ">=7.0",
-		"league/climate": "dev-master"
+		"league/climate": "dev-master",
+		"ClanCats/Container": "dev-master"
 	},
 	"autoload": {
         "psr-4": {

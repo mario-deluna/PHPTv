@@ -21,7 +21,7 @@ class IRCC
 	public function refreshAvailableCommands()
 	{
 		try {
-			$response = $this->client->requestMethod('getRemoteControllerInfo')['result'][1];
+			$response = $this->client->requestMethod('system', 'getRemoteControllerInfo')[1];
 		} 
 		catch(Exception $e) { return false; }
 

@@ -19,7 +19,7 @@ class Client
     protected $port = 80;
 
     /**
-     * PSK Code 
+     * PSK 
      * 
      * @param string
      */
@@ -95,17 +95,6 @@ class Client
     }
 
     /**
-     * Set the current api version
-     * 
-     * @param string            $version
-     * @return void
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-    }
-
-    /**
      * Build the url
      * 
      * @param string            $uri
@@ -135,9 +124,9 @@ class Client
      * Send IRCC code
      * 
      * @param string 			$irccCode
-     * @return void	
+     * @return string	
      */
-    public function sendIRCC($irccCode)
+    public function sendIRCC($irccCode) : string
     {
     	$body = "<?xml version=\"1.0\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\"><IRCCCode>$irccCode</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>";
 
@@ -154,17 +143,38 @@ class Client
      * @param string        $method
      * @param array         $params
      * @param string        $endpoint
+     * 
+     * Every endpoint always support the following methods:
+     * 
+     *  * {"id": 1, "method":"getVersions","version":"1.0","params":[]}
+     *  * {"id": 1, "method": "getMethodTypes", "version":"1.0", "params":["1.0"]}
      *
-     * @return string
+     * That way we can discover whats around.
+     * 
+     * Enpoints I found are:
+     *  * guide
+     *  * system
+     *  * videoScreen
+     *  * audio
+     *  * avContent
+     *  * etc.
+     * 
+     * @return array
      */
-    public function requestMethod(string $method, array $params = [], $endpoint = 'system')
+    public function requestMethod(string $endpoint, string $method, array $params = [], $version = '1.0') : array
     {
-        return $this->requestJSON(Client::METHOD_POST, '/sony/' . $endpoint, [], [
+        $response = $this->requestJSON(Client::METHOD_POST, '/sony/' . $endpoint, [], [
             "id" => 1,
             "method" => $method,
             "params" => $params,
-            "version" => "1.0"
+            "version" => $version
         ]);
+
+        if ((!isset($response['result'])) && (!isset($response['results']))) {
+            throw new Exception("Unexpected response from TV Api.");
+        }
+
+        return isset($response['result']) ? $response['result'] : $response['results'];
     }
 
     /**
@@ -176,9 +186,9 @@ class Client
      * @param array 		$body
      * @param array 		$headers
      * 
-     * @return string
+     * @return array
      */
-    public function requestJSON($method, $uri, array $parameters = [], array $body = [], $headers = [])
+    public function requestJSON($method, $uri, array $parameters = [], array $body = [], $headers = []) : array
     {
     	$response = $this->request($method, $uri, $parameters, json_encode($body), [
     		"content-type: application/json",
@@ -204,7 +214,7 @@ class Client
      * 
      * @return string
      */
-    public function request($method, $uri, array $parameters = [], string $body = '', array $headers = [])
+    public function request($method, $uri, array $parameters = [], string $body = '', array $headers = []) : string
     {
         $curl = curl_init();
 
@@ -221,7 +231,7 @@ class Client
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_TIMEOUT => 10,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_FOLLOWLOCATION => true,
             
