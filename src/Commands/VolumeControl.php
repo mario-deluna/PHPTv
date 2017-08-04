@@ -23,6 +23,8 @@ class VolumeControl extends BaseCommand
 		$targetVolume = $args[0];
 
 		$this->cli->out('setting volume to: '. $targetVolume);
+
+		var_dump($this->repo('audio')->setAudioVolume($targetVolume));
 	}
 
 	protected function printVolumeInformation()

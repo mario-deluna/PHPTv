@@ -132,7 +132,6 @@ class Client
 
     	return $this->request(static::METHOD_POST, '/sony/IRCC', [], $body, [
     		'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"',
-    		'X-Auth-PSK: 0000',
     		'content-type: text/xml; charset=UTF-8'
     	]);
     }
@@ -171,7 +170,7 @@ class Client
         ]);
 
         if ((!isset($response['result'])) && (!isset($response['results']))) {
-            throw new Exception("Unexpected response from TV Api.");
+            throw new Exception("Unexpected response from TV Api. " . print_r($response, true));
         }
 
         return isset($response['result']) ? $response['result'] : $response['results'];
@@ -238,7 +237,8 @@ class Client
             // headers
             CURLOPT_HTTPHEADER => array_merge([
                 "cache-control: no-cache",
-                "user-agent: PHPTv Client"
+                "user-agent: PHPTv Client",
+                'X-Auth-PSK: ' . $this->psk,
             ], $headers),
         ];
 
