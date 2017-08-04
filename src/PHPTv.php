@@ -195,6 +195,13 @@ class PHPTv extends BaseCommand
 				case 112:
 					$this->executeCommand('toggle_power');
 				break;
+
+				/**
+				 * Mute (109 = m)
+				 */
+				case 109:
+					$ircc->send('Mute');
+				break;
 				
 				/**
 				 * Unknown

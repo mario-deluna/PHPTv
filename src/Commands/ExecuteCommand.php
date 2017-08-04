@@ -2,11 +2,33 @@
 
 namespace PHPTv\Commands;
 
+use ClanCats\Container\Container;
+use League\Climate\Climate;
+
+use PHPTv\ReadlineSupportTrait;
 use PHPTv\BaseCommand;
 use PHPTv\Exception;
 
 class ExecuteCommand extends BaseCommand
-{
+{	
+	use ReadlineSupportTrait;
+
+	/**
+	 * Construct every command with the container and command line interface
+	 * 
+	 * @param Container 			$container
+	 * @param Climate 				$cli
+	 */
+	public function __construct(Container $container, Climate $cli)
+	{
+		parent::__construct($container, $cli);
+
+		// first fill the command history with available commands
+		$this->readlineCommandHistory = array_column($container->get('cmd.help.command')->keyMapping, 'command');
+
+		// inital sort the command history
+		sort($this->readlineCommandHistory);
+	}
 	/** 
      * Execute the command
      * 
@@ -16,8 +38,12 @@ class ExecuteCommand extends BaseCommand
 	{	
 		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands.');
 
-		$input = $this->cli->input('> ');
-		$commandName = $input->prompt();
+		// always clear the history and rebuild
+		// this allows us to have diffrent histories per command
+		$this->readlinePrepare();
+
+		// read the command 
+		$commandName = $this->readlinePromt('> ');
 
 		// check for help
 		if ($commandName === 'help')
@@ -40,6 +66,10 @@ class ExecuteCommand extends BaseCommand
 			return;
 		}
 
+		// update the current history
+		$this->readlineAddHistory($commandName);
+
+		// execute
 		$cmd = $this->container->get('cmd.' . $commandName);
 		$cmd->execute();
 	}

@@ -7,7 +7,7 @@ use PHPTv\Exception;
 
 class CommandHelp extends BaseCommand
 {
-	protected $keyMapping = 
+	public $keyMapping = 
 	[
 	    [
 	  		'command' => 'raw_forward',

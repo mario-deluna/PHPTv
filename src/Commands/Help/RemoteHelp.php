@@ -54,6 +54,11 @@ class RemoteHelp extends BaseCommand
 	  		'action' => 'TogglePower',
 	  		'description' => 'Turns the TV on / Off',
 	    ],
+	    [
+	  		'key' => 'm',
+	  		'action' => 'Mute',
+	  		'description' => 'Mute / Unmute the Tv.',
+	    ],
 	];
 
 	/** 
