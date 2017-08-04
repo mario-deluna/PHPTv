@@ -14,9 +14,33 @@ class ExecuteCommand extends BaseCommand
      */
 	public function execute()
 	{	
-		$input = $this->cli->input('> ');
-		$inputString = $input->prompt();
+		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands.');
 
-		echo $inputString;
+		$input = $this->cli->input('> ');
+		$commandName = $input->prompt();
+
+		// check for help
+		if ($commandName === 'help')
+		{
+			$this->container->get('cmd.help.command')->execute();
+			$this->execute();
+			return;
+		}
+
+		// check for recursion
+		if ($commandName === 'execute')
+		{
+			$this->cli->error('You are one of the funny kind huh?'); 
+			return;
+		}
+
+		if (!$this->container->has('cmd.' . $commandName))
+		{
+			$this->cli->error('There is no command with the name "' . $commandName . '" available.'); 
+			return;
+		}
+
+		$cmd = $this->container->get('cmd.' . $commandName);
+		$cmd->execute();
 	}
 }

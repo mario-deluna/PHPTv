@@ -186,7 +186,7 @@ class PHPTv extends BaseCommand
 				 * Print Help (104 = h)
 				 */
 				case 104:
-					$this->executeCommand('remote_help');
+					$this->executeCommand('help.remote');
 				break;
 				
 				/**
