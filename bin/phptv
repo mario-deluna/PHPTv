@@ -91,6 +91,9 @@ foreach([
 
     // power managment
     'toggle_power' => \PHPTv\Commands\TogglePower::class,
+
+    // Volume
+    'volume' => \PHPTv\Commands\VolumeControl::class,
 ] as $name => $className) {
     $container->bind('cmd.' . $name, $className)->arguments(['@container', $cli]);
 }

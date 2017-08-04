@@ -12,7 +12,7 @@ class RawForward extends BaseCommand
      * 
      * @return void
      */
-	public function execute()
+	public function execute(array $args = [])
 	{	
 		$ircc = $this->repo('IRCC');
 		$ircc->refreshAvailableCommands();

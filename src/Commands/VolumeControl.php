@@ -5,7 +5,7 @@ namespace PHPTv\Commands;
 use PHPTv\BaseCommand;
 use PHPTv\Exception;
 
-class TogglePower extends BaseCommand
+class VolumeControl extends BaseCommand
 {
 	/** 
      * Execute the command
@@ -14,6 +14,8 @@ class TogglePower extends BaseCommand
      */
 	public function execute(array $args = [])
 	{	
+		var_dump($args[0]); return;
+
 		$ircc = $this->repo('IRCC');
 
 		// turn tv off

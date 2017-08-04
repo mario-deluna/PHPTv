@@ -12,7 +12,7 @@ class PHPTv extends BaseCommand
      * 
      * @return void
      */
-	public function execute()
+	public function execute(array $args = [])
 	{
 		throw new Exception('This command shold only be executed using "connect".');
 	}

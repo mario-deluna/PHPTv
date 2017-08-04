@@ -68,7 +68,7 @@ class RemoteHelp extends BaseCommand
      * 
      * @return void
      */
-	public function execute()
+	public function execute(array $args = [])
 	{	
 		$this->cli->table($this->keyMapping);
 	}

@@ -44,5 +44,5 @@ abstract class BaseCommand
      * 
      * @return void
      */
-	abstract public function execute();
+	abstract public function execute(array $args = []);
 }

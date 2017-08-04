@@ -34,7 +34,7 @@ class ExecuteCommand extends BaseCommand
      * 
      * @return void
      */
-	public function execute()
+	public function execute(array $args = [])
 	{	
 		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands.');
 
@@ -43,7 +43,12 @@ class ExecuteCommand extends BaseCommand
 		$this->readlinePrepare();
 
 		// read the command 
-		$commandName = $this->readlinePromt('> ');
+		$commandString = $this->readlinePromt('> ');
+
+		// split arguments 
+		$commandString = explode(' ', $commandString);
+		$commandName = array_shift($commandString);
+		$commandArgs = $commandString;
 
 		// check for help
 		if ($commandName === 'help')
@@ -71,6 +76,6 @@ class ExecuteCommand extends BaseCommand
 
 		// execute
 		$cmd = $this->container->get('cmd.' . $commandName);
-		$cmd->execute();
+		$cmd->execute($commandArgs);
 	}
 }
