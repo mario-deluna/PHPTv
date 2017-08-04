@@ -76,13 +76,20 @@ foreach([
     $container->bind('repo.'.$name, $className)->arguments(['@client']);
 }
 
+// bind the commands
+foreach([
+    'phptv' => \PHPTv\PHPTv::class,
+    'raw_forward' => \PHPTv\Commands\RawForward::class,
+] as $name => $className) {
+    $container->bind('cmd.' . $name, $className)->arguments(['@container', $cli]);
+}
 
 /**
  * Srart PHP Tv 
  * 
  * ---------------------------------------------------------------------
  */
-$tv = new PHPTv\PHPTv($container, $cli);
+$tv = $container->get('cmd.phptv');
 
 // connect
 $tv->connect();
