@@ -49,6 +49,11 @@ class RemoteHelp extends BaseCommand
 	  		'action' => 'Home',
 	  		'description' => 'Go Home.',
 	    ],
+	    [
+	  		'key' => 'p',
+	  		'action' => 'TogglePower',
+	  		'description' => 'Turns the TV on / Off',
+	    ],
 	];
 
 	/** 

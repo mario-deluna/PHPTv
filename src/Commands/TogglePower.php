@@ -14,6 +14,19 @@ class TogglePower extends BaseCommand
      */
 	public function execute()
 	{	
-		
+		$ircc = $this->repo('IRCC');
+
+		// turn tv off
+		if ($this->repo('system')->isOn()) 
+		{
+			$this->cli->out('Turning the tv Off...');
+			$ircc->send('PowerOff');
+		} 
+		// turn on
+		else 
+		{
+			$this->cli->out('Turning the tv On...');
+			$ircc->send('TvPower');
+		}
 	}
 }

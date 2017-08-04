@@ -188,6 +188,13 @@ class PHPTv extends BaseCommand
 				case 104:
 					$this->executeCommand('help.remote');
 				break;
+
+				/**
+				 * Power on / off (112 = p)
+				 */
+				case 112:
+					$this->executeCommand('toggle_power');
+				break;
 				
 				/**
 				 * Unknown

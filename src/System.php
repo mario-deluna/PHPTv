@@ -18,4 +18,20 @@ class System extends Repository
 	{
 		return $this->request('getInterfaceInformation');
 	}
+
+	/**
+	 * Is the tv On / Off
+	 */
+	public function getPowerStatus() : string
+	{
+		return $this->request('getPowerStatus')[0]['status'] ?? 'unknown';
+	}
+
+	/**
+	 * Is the tv On / Off
+	 */
+	public function isOn() : bool
+	{
+		return $this->getPowerStatus() === 'active';
+	}
 }
