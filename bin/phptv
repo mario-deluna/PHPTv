@@ -71,6 +71,7 @@ $container->bind('client', \PHPTv\Client::class)
 foreach([
     'guide' => \PHPTv\Guide::class,
     'system' => \PHPTv\System::class,
+    'audio' => \PHPTv\Audio::class,
     'IRCC' => \PHPTv\IRCC::class,
 ] as $name => $className) {
     $container->bind('repo.'.$name, $className)->arguments(['@client']);

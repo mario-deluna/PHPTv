@@ -17,6 +17,10 @@ class CommandHelp extends BaseCommand
 	  		'command' => 'toggle_power',
 	  		'description' => 'Toggle the TV on / off.',
 	    ],
+	    [
+	  		'command' => 'volume',
+	  		'description' => 'Volume control',
+	    ],
 	];
 
 	/** 

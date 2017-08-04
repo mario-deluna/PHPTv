@@ -46,9 +46,9 @@ class ExecuteCommand extends BaseCommand
 		$commandString = $this->readlinePromt('> ');
 
 		// split arguments 
-		$commandString = explode(' ', $commandString);
-		$commandName = array_shift($commandString);
-		$commandArgs = $commandString;
+		$commandParts = explode(' ', $commandString);
+		$commandName = array_shift($commandParts);
+		$commandArgs = array_filter($commandParts);
 
 		// check for help
 		if ($commandName === 'help')
@@ -72,7 +72,7 @@ class ExecuteCommand extends BaseCommand
 		}
 
 		// update the current history
-		$this->readlineAddHistory($commandName);
+		$this->readlineAddHistory($commandString);
 
 		// execute
 		$cmd = $this->container->get('cmd.' . $commandName);

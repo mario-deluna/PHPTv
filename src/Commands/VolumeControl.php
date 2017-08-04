@@ -14,7 +14,14 @@ class VolumeControl extends BaseCommand
      */
 	public function execute(array $args = [])
 	{	
-		var_dump($args[0]); return;
+		if (!isset($args[0]))
+		{
+			return $this->printVolumeInformation();
+		}
+
+		
+
+		var_dump(); return;
 
 		$ircc = $this->repo('IRCC');
 
@@ -30,5 +37,10 @@ class VolumeControl extends BaseCommand
 			$this->cli->out('Turning the tv On...');
 			$ircc->send('TvPower');
 		}
+	}
+
+	protected function printVolumeInformation()
+	{
+		$this->cli->table($this->repo('audio')->getVolumeInformation());
 	}
 }
