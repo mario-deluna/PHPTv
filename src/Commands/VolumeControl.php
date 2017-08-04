@@ -19,24 +19,10 @@ class VolumeControl extends BaseCommand
 			return $this->printVolumeInformation();
 		}
 
-		
+		// get the target volume
+		$targetVolume = $args[0];
 
-		var_dump(); return;
-
-		$ircc = $this->repo('IRCC');
-
-		// turn tv off
-		if ($this->repo('system')->isOn()) 
-		{
-			$this->cli->out('Turning the tv Off...');
-			$ircc->send('PowerOff');
-		} 
-		// turn on
-		else 
-		{
-			$this->cli->out('Turning the tv On...');
-			$ircc->send('TvPower');
-		}
+		$this->cli->out('setting volume to: '. $targetVolume);
 	}
 
 	protected function printVolumeInformation()
