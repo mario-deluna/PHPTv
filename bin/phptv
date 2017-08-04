@@ -79,7 +79,10 @@ foreach([
 // bind the commands
 foreach([
     'phptv' => \PHPTv\PHPTv::class,
+    'execute' => \PHPTv\Commands\ExecuteCommand::class,
     'raw_forward' => \PHPTv\Commands\RawForward::class,
+    'toggle_power' => \PHPTv\Commands\TogglePower::class,
+    'remote_help' => \PHPTv\Commands\RemoteHelp::class,
 ] as $name => $className) {
     $container->bind('cmd.' . $name, $className)->arguments(['@container', $cli]);
 }

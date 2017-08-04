@@ -79,20 +79,53 @@ class PHPTv extends BaseCommand
 	}
 
 	/**
+	 * Execute a diffrent command
+	 * 
+	 * @param string 			$name
+	 */
+	protected function executeCommand(string $name)
+	{
+		$this->cli->br();
+
+		if (!$this->container->has('cmd.' . $name))
+		{
+			$this->cli->error('There is no command with the name ' . $name . ' available.');
+		}
+
+		// reset the stty settings
+		system('stty sane');
+
+		// load and run the command
+		$cmd = $this->container->get('cmd.' . $name);
+		$cmd->execute();
+
+		// go back to the cmd loop settings
+		$this->enterRemoteControlMode();
+	}
+
+	/**
+	 * This will configure stty 
+	 */
+	protected function enterRemoteControlMode()
+	{
+		$this->cli->br();
+		$this->cli->inline('<blue>[Remote] </blue>');
+		system("stty -echo -icanon");
+	}
+
+	/**
 	 * Enter the command loop 
      */
 	protected function startCMDLoop()
 	{
+		// always refresh the IRCC commands before entering the loop
 		$ircc = $this->repo('IRCC');
 		$ircc->refreshAvailableCommands();
 
 		$this->cli->br();
-		$this->cli->blue('Available commands:');
-		$this->cli->columns(array_keys($ircc->getAvailableCommands()));
+		$this->cli->out('<green>Ready!</green> You can now press the arrow keys to navigate your tv. Press "h" to view the keymapping.');
 
-		$input = $this->cli->input('> ');
-
-		system("stty -echo -icanon");
+		$this->enterRemoteControlMode();
 
 		while ($c = fread(STDIN, 1)) 
 		{
@@ -108,6 +141,9 @@ class PHPTv extends BaseCommand
 				// ingore the key prefix
 				case 27: case 91: break;
 
+				/**
+				 * Navigation
+				 */
 				case 68:
 					$ircc->send('Left');
 				break;
@@ -131,17 +167,35 @@ class PHPTv extends BaseCommand
 				case 127:
 					$ircc->send('Return');
 				break;
+
+				/**
+				 * Run command (99 = c)
+				 */
+				case 99:
+					$this->executeCommand('execute');
+				break;
+
+				/**
+				 * Forward Raw (102 = f)
+				 */
+				case 102:
+					$this->executeCommand('raw_forward');
+				break;
+
+				/**
+				 * Print Help (104 = h)
+				 */
+				case 104:
+					$this->executeCommand('remote_help');
+				break;
 				
+				/**
+				 * Unknown
+				 */
 				default:
 					$this->cli->error("Unknown Command... ($key)");
 				break;
 			}
 		}
-
-		// while (1) 
-		// {
-		// 	echo fgetc(STDIN);
-		// 	//$ircc->send(ucfirst($input->prompt()));
-		// }
 	}
 }
