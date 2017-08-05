@@ -55,7 +55,7 @@ Now you should be ready to use the remote.
 To start the remote just enter `phptv <the ip of your tv> <psk>`.
 
 ```sh
-phptv 192.168.1.42 0000
+$ phptv 192.168.1.42 0000
 ```
 
 Basics are currently:
@@ -90,7 +90,7 @@ Basics are currently:
 ------------------------------------------------------------
 | n   | VolumeUp    | Turn up the Volume                   |
 ------------------------------------------------------------
-```
+``
 
 ## PS
 
