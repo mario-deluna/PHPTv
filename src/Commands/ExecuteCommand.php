@@ -36,19 +36,45 @@ class ExecuteCommand extends BaseCommand
      */
 	public function execute(array $args = [])
 	{	
-		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands.');
+		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands. Press ctrl+d to exit.');
 
 		// always clear the history and rebuild
 		// this allows us to have diffrent histories per command
 		$this->readlinePrepare();
 
+		// add realine completition
+		readline_completion_function(function($input, $index) 
+		{
+			if (empty($input)) 
+			{
+				return array_unique(array_filter($this->readlineCommandHistory));
+			}
+
+			$matches = array();
+		    foreach($this->readlineCommandHistory as $command)
+		    {
+		    	if (stripos($command, $input) === 0)
+		    	{
+		    		$matches[] = $command;
+		    	}
+		    }
+		    return $matches;
+		});
+
+
 		// read the command 
-		$commandString = $this->readlinePromt('> ');
+		$commandString = trim($this->readlinePromt('> '));
 
 		// split arguments 
 		$commandParts = explode(' ', $commandString);
 		$commandName = array_shift($commandParts);
 		$commandArgs = array_filter($commandParts);
+
+		// check empty
+		if (empty($commandName))
+		{
+			return;
+		}
 
 		// check for help
 		if ($commandName === 'help')

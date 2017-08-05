@@ -183,6 +183,13 @@ class PHPTv extends BaseCommand
 				break;
 
 				/**
+				 * Go Home (103 = g)
+				 */
+				case 103:
+					$ircc->send('Home');;
+				break;
+
+				/**
 				 * Print Help (104 = h)
 				 */
 				case 104:

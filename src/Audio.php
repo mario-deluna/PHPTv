@@ -22,10 +22,11 @@ class Audio extends Repository
 	/**
 	 * Set the volume
 	 */
-	public function setAudioVolume(string $volume)
+	public function setAudioVolume(string $volume, string $target = 'speaker')
 	{
 		return $this->request('setAudioVolume', [[
-			'volume' => $volume, 'target' => 'speaker'
+			'volume' => $volume, 
+			'target' => $target
 		]]);
 	} 
 }

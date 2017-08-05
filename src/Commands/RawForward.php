@@ -29,6 +29,7 @@ class RawForward extends BaseCommand
 		{
 			// go back if wished
 			$inputString = $input->prompt();
+			
 			if ($inputString === ':e') {
 				$this->cli->yellow('Ok.'); return;
 			}

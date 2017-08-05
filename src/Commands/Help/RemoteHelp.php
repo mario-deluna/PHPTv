@@ -40,12 +40,17 @@ class RemoteHelp extends BaseCommand
 	  		'description' => 'Go Back / Return',
 	    ],
 	    [
+	  		'key' => 'c',
+	  		'action' => 'Command',
+	  		'description' => 'Opens the command prompt.',
+	    ],
+	    [
 	  		'key' => 'f',
 	  		'action' => 'Forward',
 	  		'description' => 'Enter the forward raw commands mode.',
 	    ],
 	    [
-	  		'key' => 'h',
+	  		'key' => 'g',
 	  		'action' => 'Home',
 	  		'description' => 'Go Home.',
 	    ],
