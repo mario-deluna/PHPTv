@@ -4,14 +4,14 @@ namespace PHPTv;
 
 trait ClientAwareTrait 
 {
-	/**
-	 * A Client instance
-	 * 
-	 * @var Client
-	 */
-	protected $client;
+    /**
+     * A Client instance
+     * 
+     * @var Client
+     */
+    protected $client;
 
-	/**
+    /**
      * Construct a auth instance
      * 
      * @param string        $endpoint The url to the content endpoint
@@ -19,6 +19,6 @@ trait ClientAwareTrait
      */
     public function __construct(Client $client)
     {
-       	$this->client = $client;
+        $this->client = $client;
     }
 }

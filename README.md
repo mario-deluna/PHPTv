@@ -6,7 +6,7 @@
 
 A Command-Line Remote control for Sony Bravia Android TV written in PHP.
 
-It was one of those evenings where I could not find the fu****g remote for my TV. So instead of doing the work, I'm supposed to do. I decided to procrastinate by writing this little program that allows you to control your Sony Android TV over the command line.  
+It was one of those evenings where I could not find the fu****g remote for my TV. So instead of doing the work I'm supposed to do. I decided to procrastinate by writing this little program that allows you to control your Sony Android TV over the command line.  
 
 [![license](https://img.shields.io/github/license/mario-deluna/phptv.svg)]()
 [![GitHub release](https://img.shields.io/github/release/mario-deluna/phptv.svg)]()
@@ -58,7 +58,7 @@ To start the remote just enter `phptv <the ip of your tv> <psk>`.
 $ phptv 192.168.1.42 0000
 ```
 
-Basics are currently:
+Remote key controls: 
 
 ```
 ------------------------------------------------------------

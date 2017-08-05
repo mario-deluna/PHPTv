@@ -103,12 +103,12 @@ class Client
      */
     public function buildUrl($uri, array $parameters = [])
     {
-    	// port in url only if not 80
-    	if ($this->port !== 80) {
-    		$port = ':' . $this->port . '/';
-    	} else {
-    		$port = "";
-    	}
+        // port in url only if not 80
+        if ($this->port !== 80) {
+            $port = ':' . $this->port . '/';
+        } else {
+            $port = "";
+        }
 
         // construct the url
         $url = $this->scheme . '://' . 
@@ -123,17 +123,17 @@ class Client
     /**
      * Send IRCC code
      * 
-     * @param string 			$irccCode
-     * @return string	
+     * @param string            $irccCode
+     * @return string   
      */
     public function sendIRCC($irccCode) : string
     {
-    	$body = "<?xml version=\"1.0\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\"><IRCCCode>$irccCode</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>";
+        $body = "<?xml version=\"1.0\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\"><IRCCCode>$irccCode</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>";
 
-    	return $this->request(static::METHOD_POST, '/sony/IRCC', [], $body, [
-    		'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"',
-    		'content-type: text/xml; charset=UTF-8'
-    	]);
+        return $this->request(static::METHOD_POST, '/sony/IRCC', [], $body, [
+            'SOAPACTION: "urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"',
+            'content-type: text/xml; charset=UTF-8'
+        ]);
     }
 
     /**
@@ -179,19 +179,19 @@ class Client
     /**
      * Run a request and return the response as array
      * 
-     * @param string 		$method
-     * @param string 		$uri 
-     * @param array 		$parameters
-     * @param array 		$body
-     * @param array 		$headers
+     * @param string        $method
+     * @param string        $uri 
+     * @param array         $parameters
+     * @param array         $body
+     * @param array         $headers
      * 
      * @return array
      */
     public function requestJSON($method, $uri, array $parameters = [], array $body = [], $headers = []) : array
     {
-    	$response = $this->request($method, $uri, $parameters, json_encode($body), [
-    		"content-type: application/json",
-    	]);
+        $response = $this->request($method, $uri, $parameters, json_encode($body), [
+            "content-type: application/json",
+        ]);
 
         // try to decode the response
         $response = json_decode($response, true);
@@ -205,11 +205,11 @@ class Client
     /**
      * Run a request and return the response body
      * 
-     * @param string 		$method
-     * @param string 		$uri 
-     * @param array 		$parameters
-     * @param string 		$body
-     * @param array 		$headers
+     * @param string        $method
+     * @param string        $uri 
+     * @param array         $parameters
+     * @param string        $body
+     * @param array         $headers
      * 
      * @return string
      */

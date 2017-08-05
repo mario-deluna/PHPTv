@@ -5,7 +5,7 @@ require "vendor/autoload.php";
 
 // import Climate
 use League\CLImate\{
-	CLImate
+    CLImate
 };
 
 /**
@@ -20,7 +20,7 @@ $cli = new CLImate;
 // configure the available arguments
 $cli->arguments->add([
 
-	'endpoint' => [
+    'endpoint' => [
         'description' => 'Your TVs IPv4 address.',
         'required'    => true,
     ],
@@ -33,9 +33,9 @@ $cli->arguments->add([
 
 // check if everything that we need is there..
 try {
-	$cli->arguments->parse();
+    $cli->arguments->parse();
 } catch(Exception $e) {
-	$cli->usage(); die;
+    $cli->usage(); die;
 }
 
 // show start screen

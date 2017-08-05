@@ -4,7 +4,7 @@ namespace PHPTv;
 
 class Auth 
 {
-	use ClientAwareTrait;
+    use ClientAwareTrait;
 
-	
+    
 }

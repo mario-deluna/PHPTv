@@ -7,230 +7,230 @@ use League\Climate\Climate;
 
 class PHPTv extends BaseCommand
 {
-	/** 
+    /** 
      * Execute the command
      * 
      * @return void
      */
-	public function execute(array $args = [])
-	{
-		throw new Exception('This command shold only be executed using "connect".');
-	}
+    public function execute(array $args = [])
+    {
+        throw new Exception('This command shold only be executed using "connect".');
+    }
 
-	/**
-	 * Connect to the TV
-	 * 
-	 * The naming pretty wrong here, we actually just make the initial request to check 
-	 * if a TV is present.
-	 */
-	public function connect()
-	{
-		$this->cli->out('Connecting to ' . $this->container->getParameter('endpoint') . '...');
-
-	    // try to fetch the available service protocols and list them.
-	    try {
-	    	$protocols = $this->repo('guide')->getServiceProtocols();
-	    }
-	    catch(Exception $e) 
-	    {
-	    	return $this->cli->error('Could not connect to the TV. ' . $e->getMessage());
-	    }
-
-	    $this->cli->info('Success!');
-	    $this->cli->br();
-
-	    // List the available service protocols
-	    $this->displayAvailableServiceProtocols($protocols);
-
-	    // continue with the device infos
-	    $this->showDeviceInfos();
-
-	    // enter cms loop
-	   	$this->startCMDLoop();
-	}
-
-	/**
-	 * Show device information
-	 */
-	protected function displayAvailableServiceProtocols(array $protocols)
-	{
-		$this->cli->blue(count($protocols) . ' service protocols are available: ');
-
-	    $protocolNames = [];
-	    foreach($protocols as $p) {
-	    	$protocolNames[] = $p[0];
-	    }
-
-	    $this->cli->columns($protocolNames);
-	}
-
-	/**
-	 * Show device information
-	 */
-	protected function showDeviceInfos()
-	{
-		$this->cli->br();
-
-		$this->cli->blue('TV Interface:');
-		$infos = $this->repo('system')->getInterfaceInformation();
-
-		// show system infos
-		$this->cli->columns($infos[0]);
-	}
-
-	/**
-	 * Execute a diffrent command
-	 * 
-	 * @param string 			$name
-	 */
-	protected function executeCommand(string $name)
-	{
-		$this->cli->br();
-
-		if (!$this->container->has('cmd.' . $name))
-		{
-			$this->cli->error('There is no command with the name ' . $name . ' available.');
-		}
-
-		// reset the stty settings
-		system('stty sane');
-
-		// load and run the command
-		$cmd = $this->container->get('cmd.' . $name);
-		$cmd->execute();
-
-		// go back to the cmd loop settings
-		$this->enterRemoteControlMode();
-	}
-
-	/**
-	 * This will configure stty 
-	 */
-	protected function enterRemoteControlMode()
-	{
-		$this->cli->br();
-		$this->cli->inline('<blue>[Remote] </blue>');
-		system("stty -echo -icanon");
-	}
-
-	/**
-	 * Enter the command loop 
+    /**
+     * Connect to the TV
+     * 
+     * The naming pretty wrong here, we actually just make the initial request to check 
+     * if a TV is present.
      */
-	protected function startCMDLoop()
-	{
-		// always refresh the IRCC commands before entering the loop
-		$ircc = $this->repo('IRCC');
-		$ircc->refreshAvailableCommands();
+    public function connect()
+    {
+        $this->cli->out('Connecting to ' . $this->container->getParameter('endpoint') . '...');
 
-		$this->cli->br();
-		$this->cli->out('<green>Ready!</green> You can now press the arrow keys to navigate your tv. Press "h" to view the keymapping.');
+        // try to fetch the available service protocols and list them.
+        try {
+            $protocols = $this->repo('guide')->getServiceProtocols();
+        }
+        catch(Exception $e) 
+        {
+            return $this->cli->error('Could not connect to the TV. ' . $e->getMessage());
+        }
 
-		$this->enterRemoteControlMode();
+        $this->cli->info('Success!');
+        $this->cli->br();
 
-		while ($c = fread(STDIN, 1)) 
-		{
-			// mapping 
-			// ← = 68
-			// → = 67
-			// ↑ = 65
-			// ↓ = 66
-			$key = ord($c);
+        // List the available service protocols
+        $this->displayAvailableServiceProtocols($protocols);
 
-			switch ($key) 
-			{
-				// ingore the key prefix
-				case 27: case 91: break;
+        // continue with the device infos
+        $this->showDeviceInfos();
 
-				/**
-				 * Navigation
-				 */
-				case 68:
-					$ircc->send('Left');
-				break;
+        // enter cms loop
+        $this->startCMDLoop();
+    }
 
-				case 67:
-					$ircc->send('Right');
-				break;
+    /**
+     * Show device information
+     */
+    protected function displayAvailableServiceProtocols(array $protocols)
+    {
+        $this->cli->blue(count($protocols) . ' service protocols are available: ');
 
-				case 65:
-					$ircc->send('Up');
-				break;
+        $protocolNames = [];
+        foreach($protocols as $p) {
+            $protocolNames[] = $p[0];
+        }
 
-				case 66:
-					$ircc->send('Down');
-				break;
+        $this->cli->columns($protocolNames);
+    }
 
-				case 10:
-					$ircc->send('Confirm');
-				break;
+    /**
+     * Show device information
+     */
+    protected function showDeviceInfos()
+    {
+        $this->cli->br();
 
-				case 127:
-					$ircc->send('Return');
-				break;
+        $this->cli->blue('TV Interface:');
+        $infos = $this->repo('system')->getInterfaceInformation();
 
-				/**
-				 * Run command (99 = c)
-				 */
-				case 99:
-					$this->executeCommand('execute');
-				break;
+        // show system infos
+        $this->cli->columns($infos[0]);
+    }
 
-				/**
-				 * Forward Raw (102 = f)
-				 */
-				case 102:
-					$this->executeCommand('raw_forward');
-				break;
+    /**
+     * Execute a diffrent command
+     * 
+     * @param string            $name
+     */
+    protected function executeCommand(string $name)
+    {
+        $this->cli->br();
 
-				/**
-				 * Go Home (103 = g)
-				 */
-				case 103:
-					$ircc->send('Home');;
-				break;
+        if (!$this->container->has('cmd.' . $name))
+        {
+            $this->cli->error('There is no command with the name ' . $name . ' available.');
+        }
 
-				/**
-				 * Print Help (104 = h)
-				 */
-				case 104:
-					$this->executeCommand('help.remote');
-				break;
+        // reset the stty settings
+        system('stty sane');
 
-				/**
-				 * Power on / off (112 = p)
-				 */
-				case 112:
-					$this->executeCommand('toggle_power');
-				break;
+        // load and run the command
+        $cmd = $this->container->get('cmd.' . $name);
+        $cmd->execute();
 
-				/**
-				 * Mute (109 = m)
-				 */
-				case 109:
-					$ircc->send('Mute');
-				break;
+        // go back to the cmd loop settings
+        $this->enterRemoteControlMode();
+    }
 
-				/**
-				 * VolumeUp (110 = n)
-				 */
-				case 110:
-					$ircc->send('VolumeUp');
-				break;
+    /**
+     * This will configure stty 
+     */
+    protected function enterRemoteControlMode()
+    {
+        $this->cli->br();
+        $this->cli->inline('<blue>[Remote] </blue>');
+        system("stty -echo -icanon");
+    }
 
-				/**
-				 * Volume Down (98 = b)
-				 */
-				case 98:
-					$ircc->send('VolumeDown');
-				break;
-				
-				/**
-				 * Unknown
-				 */
-				default:
-					$this->cli->error("Unknown Command... ($key)");
-				break;
-			}
-		}
-	}
+    /**
+     * Enter the command loop 
+     */
+    protected function startCMDLoop()
+    {
+        // always refresh the IRCC commands before entering the loop
+        $ircc = $this->repo('IRCC');
+        $ircc->refreshAvailableCommands();
+
+        $this->cli->br();
+        $this->cli->out('<green>Ready!</green> You can now press the arrow keys to navigate your tv. Press "h" to view the keymapping.');
+
+        $this->enterRemoteControlMode();
+
+        while ($c = fread(STDIN, 1)) 
+        {
+            // mapping 
+            // ← = 68
+            // → = 67
+            // ↑ = 65
+            // ↓ = 66
+            $key = ord($c);
+
+            switch ($key) 
+            {
+                // ingore the key prefix
+                case 27: case 91: break;
+
+                /**
+                 * Navigation
+                 */
+                case 68:
+                    $ircc->send('Left');
+                break;
+
+                case 67:
+                    $ircc->send('Right');
+                break;
+
+                case 65:
+                    $ircc->send('Up');
+                break;
+
+                case 66:
+                    $ircc->send('Down');
+                break;
+
+                case 10:
+                    $ircc->send('Confirm');
+                break;
+
+                case 127:
+                    $ircc->send('Return');
+                break;
+
+                /**
+                 * Run command (99 = c)
+                 */
+                case 99:
+                    $this->executeCommand('execute');
+                break;
+
+                /**
+                 * Forward Raw (102 = f)
+                 */
+                case 102:
+                    $this->executeCommand('raw_forward');
+                break;
+
+                /**
+                 * Go Home (103 = g)
+                 */
+                case 103:
+                    $ircc->send('Home');;
+                break;
+
+                /**
+                 * Print Help (104 = h)
+                 */
+                case 104:
+                    $this->executeCommand('help.remote');
+                break;
+
+                /**
+                 * Power on / off (112 = p)
+                 */
+                case 112:
+                    $this->executeCommand('toggle_power');
+                break;
+
+                /**
+                 * Mute (109 = m)
+                 */
+                case 109:
+                    $ircc->send('Mute');
+                break;
+
+                /**
+                 * VolumeUp (110 = n)
+                 */
+                case 110:
+                    $ircc->send('VolumeUp');
+                break;
+
+                /**
+                 * Volume Down (98 = b)
+                 */
+                case 98:
+                    $ircc->send('VolumeDown');
+                break;
+                
+                /**
+                 * Unknown
+                 */
+                default:
+                    $this->cli->error("Unknown Command... ($key)");
+                break;
+            }
+        }
+    }
 }
