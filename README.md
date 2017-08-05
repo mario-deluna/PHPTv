@@ -32,7 +32,7 @@ $ export PATH="$PATH:$HOME/.composer/vendor/bin"
 You can also just download and use the prebuild `.phar`.
 
 ```sh
-$ wget https://github.com/mario-deluna/PHPTv/releases/download/v1.0.0/phptv.phar
+$ wget https://github.com/mario-deluna/PHPTv/blob/v1.0.0/phptv.phar?raw=true -O phptv.phar
 ```
 
 And if you trust me, add it to your bin dir.

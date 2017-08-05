@@ -3,13 +3,14 @@
     "directories": [
         "src"
     ],
+    "extract": true,
     "files": [
         "LICENSE"
     ],
     "finder": [
         {
             "name": "*.php",
-            "exclude": ["Tests"],
+            "exclude": ["Tests", "tests"],
             "in": "vendor"
         }
     ],
