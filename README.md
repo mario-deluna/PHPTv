@@ -42,11 +42,53 @@ $ sudo chmod a+x phptv.phar
 $ sudo mv phptv.phar /usr/local/bin/phptv
 ```
 
+### Setting up the Pre-Shared Key (PSK)
+
+ 1. Go To "Settings" > "Network" > "Home network setup" > "IP control"
+ 2. Set "Authentication" to "Normal and Pre-Shared Key" 
+ 3. Choose a "Pre-Shared Key". (Default is 0000)
+
 Now you should be ready to use the remote.
 
 ## Usage 
 
+To start the remote just enter `phptv <the ip of your tv> <psk>`.
 
+```sh
+phptv 192.168.1.42 0000
+```
+
+Basics are currently:
+
+------------------------------------------------------------
+| key | action      | description                          |
+============================================================
+| ←   | Left        | Navigate left                        |
+------------------------------------------------------------
+| →   | Right       | Navigate Right                       |
+------------------------------------------------------------
+| ↑   | Up          | Navigate Up                          |
+------------------------------------------------------------
+| ↓   | Down        | Navigate Down                        |
+------------------------------------------------------------
+| ↵   | Confirm     | Enter / Confirm                      |
+------------------------------------------------------------
+| ⌫   | Return      | Go Back / Return                     |
+------------------------------------------------------------
+| c   | Command     | Opens the command prompt.            |
+------------------------------------------------------------
+| f   | Forward     | Enter the forward raw commands mode. |
+------------------------------------------------------------
+| g   | Home        | Go Home.                             |
+------------------------------------------------------------
+| p   | TogglePower | Turns the TV on / Off                |
+------------------------------------------------------------
+| m   | Mute        | Mute / Unmute the Tv.                |
+------------------------------------------------------------
+| b   | VolumeDown  | Turn down for what?                  |
+------------------------------------------------------------
+| n   | VolumeUp    | Turn up the Volume                   |
+------------------------------------------------------------
 
 ## PS
 
