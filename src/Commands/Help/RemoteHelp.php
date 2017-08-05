@@ -64,6 +64,16 @@ class RemoteHelp extends BaseCommand
 	  		'action' => 'Mute',
 	  		'description' => 'Mute / Unmute the Tv.',
 	    ],
+	    [
+	  		'key' => 'b',
+	  		'action' => 'VolumeDown',
+	  		'description' => 'Turn down for what?',
+	    ],
+	    [
+	  		'key' => 'n',
+	  		'action' => 'VolumeUp',
+	  		'description' => 'Turn up the Volume',
+	    ],
 	];
 
 	/** 

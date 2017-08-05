@@ -209,6 +209,20 @@ class PHPTv extends BaseCommand
 				case 109:
 					$ircc->send('Mute');
 				break;
+
+				/**
+				 * VolumeUp (110 = n)
+				 */
+				case 110:
+					$ircc->send('VolumeUp');
+				break;
+
+				/**
+				 * Volume Down (98 = b)
+				 */
+				case 98:
+					$ircc->send('VolumeDown');
+				break;
 				
 				/**
 				 * Unknown
