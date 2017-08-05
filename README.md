@@ -90,11 +90,11 @@ Remote key controls:
 ------------------------------------------------------------
 | n   | VolumeUp    | Turn up the Volume                   |
 ------------------------------------------------------------
-``
+```
 
 ## PS
 
-This is an absolute "just for fun" and "because I can" project. You will be off much faster just using the normal Remote.
+This is an absolute "just for fun" and "because I can" project. You will be off much faster just using the normal Remote. I still hope you like this little goof.
 
 ## Credits
 
