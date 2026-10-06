@@ -8,9 +8,9 @@ use PHPTv\Commands\BaseCommand;
 use PHPTv\Exceptions\LogicException;
 use PHPTv\RemoteControl\Guide;
 use PHPTv\RemoteControl\System;
+use function bin2hex;
 use function count;
 use function fread;
-use function ord;
 use function readline;
 use function system;
 use function trim;
@@ -81,29 +81,6 @@ final class PHPTv extends BaseCommand
 		$this->cli->columns($infos[0]);
 	}
 
-	private function authenticateIRCC(): void
-	{
-		$this->cli->br();
-
-		if ($this->ircc->startAuthentication()) {
-			$this->cli->info('IRCC ready.');
-			return;
-		}
-
-		$this->cli->yellow('A PIN has been displayed on your TV screen.');
-		system('stty sane');
-		$pin = trim((string) readline('Enter PIN: '));
-		system('stty -echo -icanon');
-
-		try {
-			$this->ircc->confirmAuthentication($pin);
-			$this->cli->info('IRCC authenticated.');
-		} catch (LogicException $e) {
-			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
-			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
-		}
-	}
-
 	private function executeCommand(string $name): void
 	{
 		$this->cli->br();
@@ -129,81 +106,58 @@ final class PHPTv extends BaseCommand
 		system('stty -echo -icanon');
 	}
 
+	private function authenticateIRCC(): void
+	{
+		$this->cli->br();
+
+		if ($this->ircc->startAuthentication()) {
+			$this->cli->info('IRCC ready.');
+			return;
+		}
+
+		$this->cli->yellow('A PIN has been displayed on your TV screen.');
+		system('stty sane');
+		$pin = trim((string) readline('Enter PIN: '));
+		system('stty -echo -icanon');
+
+		try {
+			$this->ircc->confirmAuthentication($pin);
+			$this->cli->info('IRCC authenticated.');
+		} catch (LogicException $e) {
+			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
+			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
+		}
+	}
+
 	private function startCMDLoop(): void
 	{
-		$ircc = $this->ircc;
-		$ircc->refreshAvailableCommands();
+		$this->ircc->refreshAvailableCommands();
 
 		$this->cli->br();
 		$this->cli->out('<green>Ready!</green> You can now press the arrow keys to navigate your tv. Press "h" to view the keymapping.');
 
 		$this->enterRemoteControlMode();
 
-		while ($c = fread(STDIN, 1)) {
-			$key = ord($c);
-
-			switch ($key) {
-				// ignore the key prefix
-				case 27:
-				case 91:
-					break;
-
-				case 68:
-					$ircc->send('Left');
-					break;
-				case 67:
-					$ircc->send('Right');
-					break;
-				case 65:
-					$ircc->send('Up');
-					break;
-				case 66:
-					$ircc->send('Down');
-					break;
-				case 10:
-					$ircc->send('Confirm');
-					break;
-				case 127:
-					$ircc->send('Return');
-					break;
-
-				// c
-				case 99:
-					$this->executeCommand('execute');
-					break;
-				// f
-				case 102:
-					$this->executeCommand('raw_forward');
-					break;
-				// g
-				case 103:
-					$ircc->send('Home');
-					break;
-				// h
-				case 104:
-					$this->executeCommand('help.remote');
-					break;
-				// p
-				case 112:
-					$this->executeCommand('toggle_power');
-					break;
-				// m
-				case 109:
-					$ircc->send('Mute');
-					break;
-				// n
-				case 110:
-					$ircc->send('VolumeUp');
-					break;
-				// b
-				case 98:
-					$ircc->send('VolumeDown');
-					break;
-
-				default:
-					$this->cli->error("Unknown Command... ($key)");
-					break;
-			}
+		while ($c = fread(STDIN, 3)) {
+			match ($c) {
+				"\x1b" => $this->ircc->send('Return'), // Escape
+				"\x1b[A" => $this->ircc->send('Up'), // arrow up
+				"\x1b[B" => $this->ircc->send('Down'), // arrow down
+				"\x1b[C" => $this->ircc->send('Right'), // arrow right
+				"\x1b[D" => $this->ircc->send('Left'), // arrow left
+				"\n" => $this->ircc->send('Confirm'), // Enter
+				"\x7f" => $this->ircc->send('Return'), // Backspace
+				'c' => $this->executeCommand('execute'),
+				'f' => $this->executeCommand('raw_forward'),
+				'g' => $this->ircc->send('Home'),
+				'h' => $this->executeCommand('help.remote'),
+				'i' => $this->executeCommand('input_menu'),
+				'p' => $this->executeCommand('toggle_power'),
+				'm' => $this->ircc->send('Mute'),
+				'n' => $this->ircc->send('VolumeUp'),
+				'b' => $this->ircc->send('VolumeDown'),
+				default => $this->cli->error('Unknown Command... (' . bin2hex($c) . ')'),
+			};
 		}
 	}
 

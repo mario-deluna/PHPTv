@@ -23,6 +23,10 @@ final class CommandHelpCommand extends BaseCommand
 			'command' => 'volume',
 			'description' => 'Volume control',
 		],
+		[
+			'command' => 'input_menu',
+			'description' => 'Open native input selection on TV (key: i)',
+		],
 	];
 
 	/**

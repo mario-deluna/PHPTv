@@ -155,6 +155,9 @@ $container->bind('cmd.toggle_power', \PHPTv\Commands\TogglePower::class)
 $container->bind('cmd.volume', \PHPTv\Commands\VolumeControl::class)
     ->arguments(['@repo.audio', $cli]);
 
+$container->bind('cmd.input_menu', \PHPTv\Commands\InputMenu::class)
+    ->arguments(['@repo.IRCC', $cli]);
+
 /**
  * Srart PHP Tv
  *
