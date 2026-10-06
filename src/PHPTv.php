@@ -139,7 +139,7 @@ final readonly class PHPTv extends BaseCommand
 		try {
 			$this->ircc->confirmAuthentication($pin);
 			$this->cli->info('IRCC authenticated.');
-		} catch (HttpBadResponseException | LogicException $e) {
+		} catch (HttpBadResponseException $e) {
 			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
 			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
 		}

@@ -73,7 +73,6 @@ final class IRCC implements RemoteInterface
 	 * Second step: confirm registration with PIN shown on TV screen.
 	 *
 	 * @throws HttpBadResponseException
-	 * @throws LogicException
 	 */
 	public function confirmAuthentication(string $pin): void
 	{
