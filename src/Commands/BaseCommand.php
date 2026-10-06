@@ -4,7 +4,7 @@ namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
 
-abstract class BaseCommand
+abstract readonly class BaseCommand
 {
 
 	public function __construct(protected CLImate $cli)

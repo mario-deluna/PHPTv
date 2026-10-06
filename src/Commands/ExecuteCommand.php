@@ -2,6 +2,7 @@
 
 namespace PHPTv\Commands;
 
+use ArrayObject;
 use ClanCats\Container\Container;
 use League\CLImate\CLImate;
 use PHPTv\Commands\Help\CommandHelpCommand;
@@ -19,13 +20,13 @@ use function sort;
 use function stripos;
 use function trim;
 
-final class ExecuteCommand extends BaseCommand
+final readonly class ExecuteCommand extends BaseCommand
 {
 
 	/**
-	 * @var array<string>
+	 * @var ArrayObject<int, string>
 	 */
-	protected array $readlineCommandHistory = [];
+	protected ArrayObject $readlineCommandHistory;
 
 	public function __construct(
 		private Container $container,
@@ -35,8 +36,9 @@ final class ExecuteCommand extends BaseCommand
 	{
 		parent::__construct($cli);
 
-		$this->readlineCommandHistory = array_column($helpCommand->keyMapping, 'command');
-		sort($this->readlineCommandHistory);
+		$commands = array_column(CommandHelpCommand::KEY_MAPPING, 'command');
+		sort($commands);
+		$this->readlineCommandHistory = new ArrayObject($commands);
 	}
 
 	/**
@@ -50,7 +52,7 @@ final class ExecuteCommand extends BaseCommand
 
 		readline_completion_function(function (string $input, int $index): array {
 			if ($input === '') {
-				return array_unique(array_filter($this->readlineCommandHistory, static fn (string $v): bool => $v !== ''));
+				return array_unique(array_filter($this->readlineCommandHistory->getArrayCopy(), static fn (string $v): bool => $v !== ''));
 			}
 
 			$matches = [];
@@ -97,7 +99,7 @@ final class ExecuteCommand extends BaseCommand
 
 	protected function readlineAddHistory(string $command): void
 	{
-		$this->readlineCommandHistory[] = $command;
+		$this->readlineCommandHistory->append($command);
 	}
 
 	protected function readlinePromt(string $prefix): string|false
@@ -109,7 +111,7 @@ final class ExecuteCommand extends BaseCommand
 	{
 		readline_clear_history();
 
-		foreach ($this->readlineCommandHistory as $command) {
+		foreach ($this->readlineCommandHistory->getIterator() as $command) {
 			readline_add_history($command);
 		}
 	}

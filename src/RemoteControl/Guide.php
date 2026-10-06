@@ -6,10 +6,8 @@ use PHPTv\Crate\ServiceProtocolCrate;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 
-final class Guide extends RemoteControl
+final readonly class Guide extends RemoteControl
 {
-
-	protected string $tvApiEndpoint = 'guide';
 
 	/**
 	 * @return list<ServiceProtocolCrate>
@@ -26,6 +24,11 @@ final class Guide extends RemoteControl
 		}
 
 		return $result;
+	}
+
+	protected function getTvApiEndpoint(): string
+	{
+		return 'guide';
 	}
 
 }

@@ -4,13 +4,13 @@ namespace PHPTv\Commands\Help;
 
 use PHPTv\Commands\BaseCommand;
 
-final class CommandHelpCommand extends BaseCommand
+final readonly class CommandHelpCommand extends BaseCommand
 {
 
 	/**
 	 * @var array<int, array<string, string>>
 	 */
-	public array $keyMapping = [
+	public const KEY_MAPPING = [
 		[
 			'command' => 'raw_forward',
 			'description' => 'Send raw commands via IRCC.',
@@ -34,7 +34,7 @@ final class CommandHelpCommand extends BaseCommand
 	 */
 	public function execute(array $args = []): void
 	{
-		$this->cli->table($this->keyMapping);
+		$this->cli->table(self::KEY_MAPPING);
 	}
 
 }

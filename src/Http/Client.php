@@ -37,11 +37,6 @@ final class Client
 		$this->authCookie = $cookie;
 	}
 
-	public function clearAuthCookie(): void
-	{
-		$this->authCookie = null;
-	}
-
 	/**
 	 * Initiates or confirms device registration for IRCC cookie auth.
 	 *

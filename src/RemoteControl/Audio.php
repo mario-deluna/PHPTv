@@ -5,10 +5,8 @@ namespace PHPTv\RemoteControl;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 
-final class Audio extends RemoteControl
+final readonly class Audio extends RemoteControl
 {
-
-	protected string $tvApiEndpoint = 'audio';
 
 	/**
 	 * @return array<mixed>
@@ -22,20 +20,23 @@ final class Audio extends RemoteControl
 	}
 
 	/**
-	 * @return array<mixed>
-	 *
 	 * @throws HttpBadResponseException
 	 * @throws UnexpectedTvResponseException
 	 */
 	public function setAudioVolume(
 		string $volume,
 		string $target = 'speaker',
-	): array
+	): void
 	{
-		return $this->request('setAudioVolume', [[
+		$this->request('setAudioVolume', [
 			'volume' => $volume,
 			'target' => $target,
-		]]);
+		]);
+	}
+
+	protected function getTvApiEndpoint(): string
+	{
+		return 'audio';
 	}
 
 }

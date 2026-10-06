@@ -4,13 +4,13 @@ namespace PHPTv\Commands\Help;
 
 use PHPTv\Commands\BaseCommand;
 
-final class RemoteHelpCommand extends BaseCommand
+final readonly class RemoteHelpCommand extends BaseCommand
 {
 
 	/**
 	 * @var array<int, array<string, string>>
 	 */
-	protected array $keyMapping = [
+	private const KEY_MAPPING = [
 		['key' => '←', 'action' => 'Left', 'description' => 'Navigate left'],
 		['key' => '→', 'action' => 'Right', 'description' => 'Navigate Right'],
 		['key' => '↑', 'action' => 'Up', 'description' => 'Navigate Up'],
@@ -31,7 +31,7 @@ final class RemoteHelpCommand extends BaseCommand
 	 */
 	public function execute(array $args = []): void
 	{
-		$this->cli->table($this->keyMapping);
+		$this->cli->table(self::KEY_MAPPING);
 	}
 
 }

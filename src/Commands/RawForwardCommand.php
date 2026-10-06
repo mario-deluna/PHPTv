@@ -8,7 +8,7 @@ use PHPTv\Exceptions\IrccException;
 use function array_keys;
 use function ucfirst;
 
-final class RawForward extends BaseCommand
+final readonly class RawForwardCommand extends BaseCommand
 {
 
 	public function __construct(

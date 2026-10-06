@@ -9,7 +9,7 @@ use PHPTv\Exceptions\IrccException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\System;
 
-final class TogglePower extends BaseCommand
+final readonly class TogglePowerCommand extends BaseCommand
 {
 
 	public function __construct(
@@ -34,7 +34,11 @@ final class TogglePower extends BaseCommand
 				$this->cli->out('Turning the tv On...');
 				$this->remote->send('TvPower');
 			}
-		} catch (HttpBadResponseException | IrccException | UnexpectedTvResponseException $e) {
+		} catch (
+			HttpBadResponseException |
+			IrccException |
+			UnexpectedTvResponseException $e
+		) {
 			$this->cli->error($e->getMessage());
 		}
 	}

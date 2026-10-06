@@ -7,7 +7,7 @@ use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\Audio;
 
-final class VolumeControl extends BaseCommand
+final readonly class VolumeControlCommand extends BaseCommand
 {
 
 	public function __construct(

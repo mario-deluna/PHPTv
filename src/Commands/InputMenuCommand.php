@@ -6,7 +6,7 @@ use League\CLImate\CLImate;
 use PHPTv\Contracts\RemoteInterface;
 use PHPTv\Exceptions\IrccException;
 
-final class InputMenu extends BaseCommand
+final readonly class InputMenuCommand extends BaseCommand
 {
 
 	public function __construct(

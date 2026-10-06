@@ -21,7 +21,7 @@ use function system;
 use function trim;
 use const STDIN;
 
-final class PHPTv extends BaseCommand
+final readonly class PHPTv extends BaseCommand
 {
 
 	public function __construct(

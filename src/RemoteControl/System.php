@@ -7,10 +7,8 @@ use PHPTv\Enum\PowerStatus;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 
-final class System extends RemoteControl
+final readonly class System extends RemoteControl
 {
-
-	protected string $tvApiEndpoint = 'system';
 
 	/**
 	 * @throws HttpBadResponseException
@@ -37,6 +35,11 @@ final class System extends RemoteControl
 	public function isOn(): bool
 	{
 		return $this->getPowerStatus() === PowerStatus::Active;
+	}
+
+	protected function getTvApiEndpoint(): string
+	{
+		return 'system';
 	}
 
 }
