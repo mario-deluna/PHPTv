@@ -2,6 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
+use PHPTv\Exceptions\LogicException;
+
 final class Guide extends RemoteControl
 {
 
@@ -9,6 +11,8 @@ final class Guide extends RemoteControl
 
 	/**
 	 * @return array<mixed>
+	 *
+	 * @throws LogicException
 	 */
 	public function getServiceProtocols(): array
 	{

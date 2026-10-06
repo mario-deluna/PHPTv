@@ -21,7 +21,8 @@
 	"bin": ["bin/phptv"],
 	"require-dev": {
 		"phpstan/phpstan": "^2.0",
-		"shipmonk/coding-standard": "*"
+		"shipmonk/coding-standard": "*",
+		"phpstan/phpstan-strict-rules": "^2.0"
 	},
 	"scripts": {
 		"stan": "vendor/bin/phpstan analyse",

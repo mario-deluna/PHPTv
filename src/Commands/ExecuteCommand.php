@@ -50,7 +50,7 @@ final class ExecuteCommand extends BaseCommand
 
 		readline_completion_function(function (string $input, int $index): array {
 			if ($input === '') {
-				return array_unique(array_filter($this->readlineCommandHistory));
+				return array_unique(array_filter($this->readlineCommandHistory, static fn (string $v): bool => $v !== ''));
 			}
 
 			$matches = [];
@@ -66,7 +66,7 @@ final class ExecuteCommand extends BaseCommand
 
 		$commandParts = explode(' ', $commandString);
 		$commandName = array_shift($commandParts);
-		$commandArgs = array_values(array_filter($commandParts));
+		$commandArgs = array_values(array_filter($commandParts, static fn (string $v): bool => $v !== ''));
 
 		if ($commandName === '') {
 			return;

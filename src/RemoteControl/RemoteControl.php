@@ -2,6 +2,7 @@
 
 namespace PHPTv\RemoteControl;
 
+use PHPTv\Exceptions\LogicException;
 use PHPTv\Http\Client;
 
 abstract class RemoteControl
@@ -16,6 +17,8 @@ abstract class RemoteControl
 	/**
 	 * @param array<mixed> $params
 	 * @return array<mixed>
+	 *
+	 * @throws LogicException
 	 */
 	public function request(
 		string $method,

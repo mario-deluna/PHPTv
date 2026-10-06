@@ -2,6 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
+use PHPTv\Exceptions\LogicException;
+
 final class Audio extends RemoteControl
 {
 
@@ -9,6 +11,8 @@ final class Audio extends RemoteControl
 
 	/**
 	 * @return array<mixed>
+	 *
+	 * @throws LogicException
 	 */
 	public function getVolumeInformation(): array
 	{
@@ -17,6 +21,8 @@ final class Audio extends RemoteControl
 
 	/**
 	 * @return array<mixed>
+	 *
+	 * @throws LogicException
 	 */
 	public function setAudioVolume(
 		string $volume,

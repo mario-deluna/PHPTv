@@ -26,6 +26,9 @@ final class Client
 	{
 	}
 
+	/**
+	 * @throws LogicException
+	 */
 	public function sendIRCC(string $irccCode): string
 	{
 		$body = '<?xml version="1.0"?>'
@@ -46,6 +49,8 @@ final class Client
 	/**
 	 * @param array<string, string> $params
 	 * @return array<mixed>
+	 *
+	 * @throws LogicException
 	 */
 	public function requestMethod(
 		string $endpoint,
@@ -78,6 +83,9 @@ final class Client
 		return $response['result'] ?? $response['results'];
 	}
 
+	/**
+	 * @throws LogicException
+	 */
 	private function send(RequestInterface $request): string
 	{
 		try {

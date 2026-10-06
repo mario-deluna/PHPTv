@@ -42,6 +42,9 @@ final class IRCC
 		return true;
 	}
 
+	/**
+	 * @throws LogicException
+	 */
 	public function send(string $codeName): string
 	{
 		if (!isset($this->availableCommands[$codeName])) {
