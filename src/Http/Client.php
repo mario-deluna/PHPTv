@@ -2,8 +2,9 @@
 
 namespace PHPTv\Http;
 
-use PHPTv\Exceptions\AuthException;
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\HttpAuthException;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -47,7 +48,7 @@ final class Client
 	 * Pass null for $pin on the first call — the TV will display a PIN on screen
 	 * and return null here. Pass the displayed PIN to confirm and receive the cookie.
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
 	 */
 	public function actRegister(
 		string $clientId,
@@ -76,7 +77,7 @@ final class Client
 		try {
 			$response = $this->httpClient->sendRequest($request);
 		} catch (ClientExceptionInterface $e) {
-			throw new LogicException('actRegister failed: ' . $e->getMessage(), 0, $e);
+			throw HttpBadResponseException::requestFailed('actRegister', $e);
 		}
 
 		if ($response->getStatusCode() === 401) {
@@ -84,7 +85,10 @@ final class Client
 		}
 
 		if ($response->getStatusCode() !== 200) {
-			throw new LogicException('actRegister returned unexpected status: ' . $response->getStatusCode());
+			throw HttpBadResponseException::badStatusReceived(
+				$response->getStatusCode(),
+				$this->baseUrl . '/sony/accessControl',
+			);
 		}
 
 		preg_match('/auth=([^;]+)/', $response->getHeaderLine('Set-Cookie'), $matches);
@@ -93,8 +97,8 @@ final class Client
 	}
 
 	/**
-	 * @throws AuthException
-	 * @throws LogicException
+	 * @throws HttpAuthException
+	 * @throws HttpBadResponseException
 	 */
 	public function sendIRCC(string $irccCode): void
 	{
@@ -118,18 +122,18 @@ final class Client
 		try {
 			$response = $this->httpClient->sendRequest($request);
 		} catch (ClientExceptionInterface $e) {
-			throw new LogicException('Request failed: ' . $e->getMessage(), 0, $e);
+			throw HttpBadResponseException::requestFailed('IRCC', $e);
 		}
 
 		$status = $response->getStatusCode();
 
 		if ($status === 401 || $status === 403 || $status === 404) {
 			$this->authCookie = null;
-			throw new AuthException('IRCC session expired (HTTP ' . $status . ').');
+			throw HttpAuthException::create($status);
 		}
 
 		if ($status < 200 || $status >= 300) {
-			throw new LogicException('Received bad status code: ' . $status . "\n\nURL:\n" . $request->getUri());
+			throw HttpBadResponseException::badStatusReceived($status, (string) $request->getUri());
 		}
 	}
 
@@ -137,7 +141,8 @@ final class Client
 	 * @param array<string, string> $params
 	 * @return array<mixed>
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function requestMethod(
 		string $endpoint,
@@ -160,30 +165,30 @@ final class Client
 		$response = json_decode($responseBody, true);
 
 		if (!is_array($response)) {
-			throw new LogicException('Could not decode response.');
+			throw UnexpectedTvResponseException::couldNotDecode();
 		}
 
 		if (!isset($response['result']) && !isset($response['results'])) {
-			throw new LogicException('Unexpected response from TV Api. ' . print_r($response, true));
+			throw UnexpectedTvResponseException::unexpectedStructure(print_r($response, true));
 		}
 
 		return $response['result'] ?? $response['results'];
 	}
 
 	/**
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
 	 */
 	private function send(RequestInterface $request): string
 	{
 		try {
 			$response = $this->httpClient->sendRequest($request);
 		} catch (ClientExceptionInterface $e) {
-			throw new LogicException('Request failed: ' . $e->getMessage(), 0, $e);
+			throw HttpBadResponseException::requestFailed('REST', $e);
 		}
 
 		$status = $response->getStatusCode();
 		if ($status < 200 || $status >= 300) {
-			throw new LogicException('Received bad status code: ' . $status . "\n\nURL:\n" . $request->getUri());
+			throw HttpBadResponseException::badStatusReceived($status, (string) $request->getUri());
 		}
 
 		return $response->getBody()->getContents();

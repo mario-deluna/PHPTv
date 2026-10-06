@@ -4,6 +4,9 @@ namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
 use PHPTv\Contracts\RemoteInterface;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\IrccException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\System;
 
 final class TogglePower extends BaseCommand
@@ -23,12 +26,16 @@ final class TogglePower extends BaseCommand
 	 */
 	public function execute(array $args = []): void
 	{
-		if ($this->system->isOn()) {
-			$this->cli->out('Turning the tv Off...');
-			$this->remote->send('PowerOff');
-		} else {
-			$this->cli->out('Turning the tv On...');
-			$this->remote->send('TvPower');
+		try {
+			if ($this->system->isOn()) {
+				$this->cli->out('Turning the tv Off...');
+				$this->remote->send('PowerOff');
+			} else {
+				$this->cli->out('Turning the tv On...');
+				$this->remote->send('TvPower');
+			}
+		} catch (HttpBadResponseException | IrccException | UnexpectedTvResponseException $e) {
+			$this->cli->error($e->getMessage());
 		}
 	}
 

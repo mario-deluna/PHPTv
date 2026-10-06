@@ -3,8 +3,11 @@
 namespace PHPTv;
 
 use PHPTv\Contracts\RemoteInterface;
-use PHPTv\Exceptions\AuthException;
+use PHPTv\Exceptions\HttpAuthException;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\IrccException;
 use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\Http\Client;
 use function md5;
 
@@ -31,12 +34,12 @@ final class IRCC implements RemoteInterface
 		return $this->availableCommands;
 	}
 
-	public function refreshAvailableCommands(): bool
+	public function refreshAvailableCommands(): void
 	{
 		try {
 			$response = $this->client->requestMethod('system', 'getRemoteControllerInfo')[1];
-		} catch (LogicException $e) {
-			return false;
+		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
+			return;
 		}
 
 		$this->availableCommands = [];
@@ -44,19 +47,17 @@ final class IRCC implements RemoteInterface
 		foreach ($response as $command) {
 			$this->availableCommands[(string) $command['name']] = (string) $command['value'];
 		}
-
-		return true;
 	}
 
 	/**
 	 * First step of IRCC registration. Returns true if already authenticated
 	 * (cookie received), false if PIN is required (TV shows PIN on screen).
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
 	 */
 	public function startAuthentication(): bool
 	{
-		$cookie = $this->client->actRegister(md5($this->appName . ':1'), $this->appName);
+		$cookie = $this->client->actRegister($this->makeHashId(), $this->appName);
 
 		if ($cookie !== null) {
 			$this->client->setAuthCookie($cookie);
@@ -69,11 +70,12 @@ final class IRCC implements RemoteInterface
 	/**
 	 * Second step: confirm registration with PIN shown on TV screen.
 	 *
+	 * @throws HttpBadResponseException
 	 * @throws LogicException
 	 */
 	public function confirmAuthentication(string $pin): void
 	{
-		$cookie = $this->client->actRegister($this->appName . ':1', $this->appName, $pin);
+		$cookie = $this->client->actRegister($this->makeHashId(), $this->appName, $pin);
 
 		if ($cookie === null) {
 			throw new LogicException('IRCC authentication failed: invalid PIN.');
@@ -83,7 +85,8 @@ final class IRCC implements RemoteInterface
 	}
 
 	/**
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws IrccException
 	 */
 	public function send(string $codeName): void
 	{
@@ -95,17 +98,22 @@ final class IRCC implements RemoteInterface
 
 		try {
 			$this->client->sendIRCC($this->availableCommands[$codeName]);
-		} catch (AuthException $e) {
+		} catch (HttpAuthException $e) {
 			if (!$this->startAuthentication()) {
-				throw new LogicException('IRCC session expired and re-authentication requires a PIN. Restart the app.');
+				throw IrccException::sessionExpiredPinRequired();
 			}
 
 			try {
 				$this->client->sendIRCC($this->availableCommands[$codeName]);
-			} catch (AuthException $e) {
-				throw new LogicException('IRCC re-authentication succeeded but command still failed.', 0, $e);
+			} catch (HttpAuthException $e) {
+				throw IrccException::reAuthenticationFailed($e);
 			}
 		}
+	}
+
+	private function makeHashId(): string
+	{
+		return md5($this->appName . ':1');
 	}
 
 }

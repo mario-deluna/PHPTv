@@ -2,7 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 
 final class Audio extends RemoteControl
 {
@@ -12,7 +13,8 @@ final class Audio extends RemoteControl
 	/**
 	 * @return array<mixed>
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function getVolumeInformation(): array
 	{
@@ -22,7 +24,8 @@ final class Audio extends RemoteControl
 	/**
 	 * @return array<mixed>
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function setAudioVolume(
 		string $volume,

@@ -2,7 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 
 final class System extends RemoteControl
 {
@@ -12,7 +13,8 @@ final class System extends RemoteControl
 	/**
 	 * @return array<mixed>
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function getInterfaceInformation(): array
 	{
@@ -20,7 +22,8 @@ final class System extends RemoteControl
 	}
 
 	/**
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function getPowerStatus(): string
 	{
@@ -28,7 +31,8 @@ final class System extends RemoteControl
 	}
 
 	/**
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function isOn(): bool
 	{

@@ -5,7 +5,10 @@ namespace PHPTv;
 use ClanCats\Container\Container;
 use League\CLImate\CLImate;
 use PHPTv\Commands\BaseCommand;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\IrccException;
 use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\Guide;
 use PHPTv\RemoteControl\System;
 use function bin2hex;
@@ -44,7 +47,7 @@ final class PHPTv extends BaseCommand
 
 		try {
 			$protocols = $this->guide->getServiceProtocols();
-		} catch (LogicException $e) {
+		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
 			$this->cli->error('Could not connect to the TV. ' . $e->getMessage());
 			return;
 		}
@@ -77,8 +80,13 @@ final class PHPTv extends BaseCommand
 	{
 		$this->cli->br();
 		$this->cli->blue('TV Interface:');
-		$infos = $this->system->getInterfaceInformation();
-		$this->cli->columns($infos[0]);
+
+		try {
+			$infos = $this->system->getInterfaceInformation();
+			$this->cli->columns($infos[0]);
+		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
+			$this->cli->error('Could not load device info: ' . $e->getMessage());
+		}
 	}
 
 	private function executeCommand(string $name): void
@@ -110,8 +118,14 @@ final class PHPTv extends BaseCommand
 	{
 		$this->cli->br();
 
-		if ($this->ircc->startAuthentication()) {
-			$this->cli->info('IRCC ready.');
+		try {
+			if ($this->ircc->startAuthentication()) {
+				$this->cli->info('IRCC ready.');
+				return;
+			}
+		} catch (HttpBadResponseException $e) {
+			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
+			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
 			return;
 		}
 
@@ -123,7 +137,7 @@ final class PHPTv extends BaseCommand
 		try {
 			$this->ircc->confirmAuthentication($pin);
 			$this->cli->info('IRCC authenticated.');
-		} catch (LogicException $e) {
+		} catch (HttpBadResponseException | LogicException $e) {
 			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
 			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
 		}
@@ -139,25 +153,29 @@ final class PHPTv extends BaseCommand
 		$this->enterRemoteControlMode();
 
 		while ($c = fread(STDIN, 3)) {
-			match ($c) {
-				"\x1b" => $this->ircc->send('Return'), // Escape
-				"\x1b[A" => $this->ircc->send('Up'), // arrow up
-				"\x1b[B" => $this->ircc->send('Down'), // arrow down
-				"\x1b[C" => $this->ircc->send('Right'), // arrow right
-				"\x1b[D" => $this->ircc->send('Left'), // arrow left
-				"\n" => $this->ircc->send('Confirm'), // Enter
-				"\x7f" => $this->ircc->send('Return'), // Backspace
-				'c' => $this->executeCommand('execute'),
-				'f' => $this->executeCommand('raw_forward'),
-				'g' => $this->ircc->send('Home'),
-				'h' => $this->executeCommand('help.remote'),
-				'i' => $this->executeCommand('input_menu'),
-				'p' => $this->executeCommand('toggle_power'),
-				'm' => $this->ircc->send('Mute'),
-				'n' => $this->ircc->send('VolumeUp'),
-				'b' => $this->ircc->send('VolumeDown'),
-				default => $this->cli->error('Unknown Command... (' . bin2hex($c) . ')'),
-			};
+			try {
+				match ($c) {
+					"\x1b" => $this->ircc->send('Return'), // Escape
+					"\x1b[A" => $this->ircc->send('Up'), // arrow up
+					"\x1b[B" => $this->ircc->send('Down'), // arrow down
+					"\x1b[C" => $this->ircc->send('Right'), // arrow right
+					"\x1b[D" => $this->ircc->send('Left'), // arrow left
+					"\n" => $this->ircc->send('Confirm'), // Enter
+					"\x7f" => $this->ircc->send('Return'), // Backspace
+					'c' => $this->executeCommand('execute'),
+					'f' => $this->executeCommand('raw_forward'),
+					'g' => $this->ircc->send('Home'),
+					'h' => $this->executeCommand('help.remote'),
+					'i' => $this->executeCommand('input_menu'),
+					'p' => $this->executeCommand('toggle_power'),
+					'm' => $this->ircc->send('Mute'),
+					'n' => $this->ircc->send('VolumeUp'),
+					'b' => $this->ircc->send('VolumeDown'),
+					default => $this->cli->error('Unknown Command... (' . bin2hex($c) . ')'),
+				};
+			} catch (HttpBadResponseException | IrccException $e) {
+				$this->cli->error($e->getMessage());
+			}
 		}
 	}
 

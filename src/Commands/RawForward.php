@@ -4,7 +4,7 @@ namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
 use PHPTv\Contracts\RemoteInterface;
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\IrccException;
 use function array_keys;
 use function ucfirst;
 
@@ -48,7 +48,7 @@ final class RawForward extends BaseCommand
 
 			try {
 				$this->remote->send(ucfirst($inputString));
-			} catch (LogicException $e) {
+			} catch (IrccException $e) {
 				$this->cli->error($e->getMessage());
 			}
 		}

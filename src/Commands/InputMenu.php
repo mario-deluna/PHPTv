@@ -4,7 +4,7 @@ namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
 use PHPTv\Contracts\RemoteInterface;
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\IrccException;
 
 final class InputMenu extends BaseCommand
 {
@@ -24,7 +24,7 @@ final class InputMenu extends BaseCommand
 	{
 		try {
 			$this->remote->send('Input');
-		} catch (LogicException $e) {
+		} catch (IrccException $e) {
 			$this->cli->error($e->getMessage());
 		}
 	}

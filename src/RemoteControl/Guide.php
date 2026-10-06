@@ -2,7 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 
 final class Guide extends RemoteControl
 {
@@ -12,7 +13,8 @@ final class Guide extends RemoteControl
 	/**
 	 * @return array<mixed>
 	 *
-	 * @throws LogicException
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
 	 */
 	public function getServiceProtocols(): array
 	{

@@ -3,6 +3,8 @@
 namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
+use PHPTv\Exceptions\HttpBadResponseException;
+use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\Audio;
 
 final class VolumeControl extends BaseCommand
@@ -21,19 +23,27 @@ final class VolumeControl extends BaseCommand
 	 */
 	public function execute(array $args = []): void
 	{
-		if (!isset($args[0])) {
-			$this->printVolumeInformation();
-			return;
+		try {
+			if (!isset($args[0])) {
+				$this->printVolumeInformation();
+				return;
+			}
+
+			$targetVolume = $args[0];
+			$target = isset($args[1]) ? 'headphone' : 'speaker';
+
+			$this->cli->out('Setting volume to: ' . $targetVolume . ' on ' . $target);
+			$this->audio->setAudioVolume($targetVolume, $target);
+			$this->cli->out('Done.');
+		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
+			$this->cli->error($e->getMessage());
 		}
-
-		$targetVolume = $args[0];
-		$target = isset($args[1]) ? 'headphone' : 'speaker';
-
-		$this->cli->out('Setting volume to: ' . $targetVolume . ' on ' . $target);
-		$this->audio->setAudioVolume($targetVolume, $target);
-		$this->cli->out('Done.');
 	}
 
+	/**
+	 * @throws HttpBadResponseException
+	 * @throws UnexpectedTvResponseException
+	 */
 	protected function printVolumeInformation(): void
 	{
 		$this->cli->table($this->audio->getVolumeInformation());

@@ -2,15 +2,12 @@
 
 namespace PHPTv\Contracts;
 
-use PHPTv\Exceptions\LogicException;
+use PHPTv\Exceptions\IrccException;
 
 interface RemoteInterface
 {
 
-	/**
-	 * Returns false if commands could not be loaded (e.g. connection error).
-	 */
-	public function refreshAvailableCommands(): bool;
+	public function refreshAvailableCommands(): void;
 
 	/**
 	 * @return array<string, string>
@@ -18,7 +15,7 @@ interface RemoteInterface
 	public function getAvailableCommands(): array;
 
 	/**
-	 * @throws LogicException
+	 * @throws IrccException
 	 */
 	public function send(string $codeName): void;
 
