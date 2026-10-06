@@ -7,23 +7,23 @@ use PHPTv\Http\Client;
 abstract class RemoteControl
 {
 
-    protected string $tvApiEndpoint = '';
+	protected string $tvApiEndpoint = '';
 
-    public function __construct(private Client $client)
-    {
-    }
+	public function __construct(private Client $client)
+	{
+	}
 
-    /**
-     * @param array<mixed> $params
-     * @return array<mixed>
-     */
-    public function request(
-        string $method,
-        array $params = [],
-        string $version = '1.0',
-    ): array
-    {
-        return $this->client->requestMethod($this->tvApiEndpoint, $method, $params, $version);
-    }
+	/**
+	 * @param array<mixed> $params
+	 * @return array<mixed>
+	 */
+	public function request(
+		string $method,
+		array $params = [],
+		string $version = '1.0',
+	): array
+	{
+		return $this->client->requestMethod($this->tvApiEndpoint, $method, $params, $version);
+	}
 
 }

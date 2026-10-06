@@ -5,12 +5,14 @@ namespace PHPTv\RemoteControl;
 final class Guide extends RemoteControl
 {
 
-    protected string $tvApiEndpoint = 'guide';
+	protected string $tvApiEndpoint = 'guide';
 
-    /** @return array<mixed> */
-    public function getServiceProtocols(): array
-    {
-        return $this->request('getServiceProtocols');
-    }
+	/**
+	 * @return array<mixed>
+	 */
+	public function getServiceProtocols(): array
+	{
+		return $this->request('getServiceProtocols');
+	}
 
 }
