@@ -22,13 +22,15 @@
 	"require-dev": {
 		"phpstan/phpstan": "^2.0",
 		"shipmonk/coding-standard": "*",
-		"phpstan/phpstan-strict-rules": "^2.0"
+		"phpstan/phpstan-strict-rules": "^2.0",
+		"humbug/box": "^4.7"
 	},
 	"scripts": {
 		"stan": "vendor/bin/phpstan analyse",
 		"cs": "vendor/bin/phpcs",
 		"cs-fix": "vendor/bin/phpcbf",
-		"qa": ["@cs", "@stan"]
+		"qa": ["@cs", "@stan"],
+		"build": "vendor/bin/box compile"
 	},
 	"config": {
 		"allow-plugins": {
