@@ -12,7 +12,6 @@ use PHPTv\Exceptions\LogicException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 use PHPTv\RemoteControl\Guide;
 use PHPTv\RemoteControl\System;
-use function bin2hex;
 use function count;
 use function fread;
 use function get_object_vars;
@@ -113,6 +112,7 @@ final readonly class PHPTv extends BaseCommand
 	{
 		$this->cli->br();
 		$this->cli->inline('<blue>[Remote] </blue>');
+		$this->cli->br();
 		system('stty -echo -icanon');
 	}
 
@@ -173,12 +173,21 @@ final readonly class PHPTv extends BaseCommand
 					'm' => $this->ircc->send('Mute'),
 					'n' => $this->ircc->send('VolumeUp'),
 					'b' => $this->ircc->send('VolumeDown'),
-					default => $this->cli->error('Unknown Command... (' . bin2hex($c) . ')'),
+					'q' => $this->quit(), // Quit
+					default => $this->cli->comment("Unknown Command... ($c), use 'h' for help."),
 				};
 			} catch (HttpBadResponseException | IrccException $e) {
 				$this->cli->error($e->getMessage());
 			}
 		}
+	}
+
+	private function quit(): never
+	{
+		$this->cli->br();
+		$this->cli->info('Bye!');
+		system('stty sane');
+		exit(0);
 	}
 
 }

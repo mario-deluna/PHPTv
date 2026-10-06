@@ -20,10 +20,13 @@ final readonly class RemoteHelpCommand extends BaseCommand
 		['key' => 'c', 'action' => 'Command', 'description' => 'Opens the command prompt.'],
 		['key' => 'f', 'action' => 'Forward', 'description' => 'Enter the forward raw commands mode.'],
 		['key' => 'g', 'action' => 'Home', 'description' => 'Go Home.'],
+		['key' => 'h', 'action' => 'Help', 'description' => 'Show this keymapping help.'],
+		['key' => 'i', 'action' => 'InputMenu', 'description' => 'Open native input selection on TV.'],
 		['key' => 'p', 'action' => 'TogglePower', 'description' => 'Turns the TV on / Off'],
 		['key' => 'm', 'action' => 'Mute', 'description' => 'Mute / Unmute the Tv.'],
 		['key' => 'b', 'action' => 'VolumeDown', 'description' => 'Turn down for what?'],
 		['key' => 'n', 'action' => 'VolumeUp', 'description' => 'Turn up the Volume'],
+		['key' => 'q', 'action' => 'Quit', 'description' => 'Exit PHPTv.'],
 	];
 
 	/**
