@@ -3,7 +3,6 @@
     "directories": [
         "src"
     ],
-    "extract": true,
     "files": [
         "LICENSE"
     ],
@@ -14,6 +13,7 @@
             "in": "vendor"
         }
     ],
+    "dump-autoload": false,
     "git-version": "package_version",
     "main": "bin/phptv",
     "output": "phptv.phar",

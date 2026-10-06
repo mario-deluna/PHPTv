@@ -1,0 +1,15 @@
+parameters:
+	level: 8
+	paths:
+		- src
+
+	exceptions:
+		check:
+			missingCheckedExceptionInThrows: true
+			tooWideThrowType: true
+		implicitThrows: false
+		checkedExceptionClasses:
+			- PHPTv\Exceptions\RuntimeException
+
+includes:
+	- vendor/phpstan/phpstan-strict-rules/rules.neon

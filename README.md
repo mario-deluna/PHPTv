@@ -92,6 +92,14 @@ Remote key controls:
 ------------------------------------------------------------
 ```
 
+## Sony API Documentation
+
+- [REST API Specification](https://pro-bravia.sony.net/develop/integrate/rest-api/spec/) — endpoint overview, JSON-RPC format, authentication via `X-Auth-PSK`
+- [Getting Started](https://pro-bravia.sony.net/develop/integrate/rest-api/spec/getting-started/) — introduction to the REST API
+- [API Reference](https://pro-bravia.sony.net/remote-display-control/rest-api/reference/) — full reference documentation
+- [IRCC Codes](https://pro-bravia.sony.net/develop/integrate/ircc-ip/ircc-codes/) — list of codes for SOAP-based control (infrared over IP)
+- [Sony Bravia HTTP API (community Gist)](https://gist.github.com/kalleth/e10e8f3b8b7cb1bac21463b0073a65fb) — unofficial documentation for older models
+
 ## PS
 
 This is an absolute "just for fun" and "because I can" project. You will be off much faster just using the normal Remote. I still hope you like this little goof.

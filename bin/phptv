@@ -1,22 +1,41 @@
 #!/usr/bin/env php
-<?php 
+<?php
 
 if (extension_loaded('phar') && ($uri = Phar::running())) {
-    require "$uri/vendor/autoload.php";
+	require "$uri/vendor/autoload.php";
 } else {
-    require __DIR__ . '/../vendor/autoload.php';
+	require __DIR__ . '/../vendor/autoload.php';
 }
 
 // import Climate
-use League\CLImate\{
-    CLImate
-};
+use League\CLImate\{CLImate};
+use PHPTv\Commands\ExecuteCommand;
+use PHPTv\Commands\Help\CommandHelpCommand;
+use PHPTv\Commands\Help\RemoteHelpCommand;
+use PHPTv\Commands\InputMenuCommand;
+use PHPTv\Commands\RawForwardCommand;
+use PHPTv\Commands\TogglePowerCommand;
+use PHPTv\Commands\VolumeControlCommand;
+use PHPTv\PHPTv;
+use StrictPhp\HttpClients\Actions\FindExtensionFromHeadersAction;
+use StrictPhp\HttpClients\Actions\StreamAction;
+use StrictPhp\HttpClients\Clients\Event\Actions\MakePathAction;
+use StrictPhp\HttpClients\Clients\MainHttp\MainHttpClient;
+use StrictPhp\HttpClients\Clients\Store\StoreClient;
+use StrictPhp\HttpClients\Clients\Store\StoreConfig;
+use StrictPhp\HttpClients\Filesystem\Factories\FileFactory;
+use StrictPhp\HttpClients\Managers\ConfigManager;
+use StrictPhp\HttpClients\Requests\SaveForPhpstormRequest;
+use StrictPhp\HttpClients\Responses\SaveResponse;
+use StrictPhp\HttpClients\Services\FilesystemService;
 
 /**
- * Prepare the CLI 
- * 
+ * Prepare the CLI
+ *
  * ---------------------------------------------------------------------
  */
+
+date_default_timezone_set('Europe/Prague');
 
 // create a climate instance
 $cli = new CLImate;
@@ -24,22 +43,30 @@ $cli = new CLImate;
 // configure the available arguments
 $cli->arguments->add([
 
-    'endpoint' => [
-        'description' => 'Your TVs IPv4 address.',
-        'required'    => true,
-    ],
+	'endpoint' => [
+		'description' => 'Your TVs IPv4 address.',
+		'required' => true,
+	],
 
-    'psk' => [
-        'description' => 'Your TVs Pre-Shared Key (PSK). You can set the key under: Settings -> Network -> Home network setup -> ip control. There you have to enable the "Pre-Shared" Authentication.',
-        'required'    => true,
-    ],
+	'psk' => [
+		'description' => 'Your TVs Pre-Shared Key (PSK). You can set the key under: Settings -> Network -> Home network setup -> ip control. There you have to enable the "Pre-Shared" Authentication.',
+		'required' => true,
+	],
+
+	'name' => [
+		'prefix' => 'n',
+		'longPrefix' => 'name',
+		'description' => 'Application name shown on the TV during IRCC authentication.',
+		'defaultValue' => 'PHPTv',
+	],
 ]);
 
 // check if everything that we need is there..
 try {
-    $cli->arguments->parse();
-} catch(Exception $e) {
-    $cli->usage(); die;
+	$cli->arguments->parse();
+} catch (Exception $e) {
+	$cli->usage();
+	die;
 }
 
 // show start screen
@@ -56,58 +83,96 @@ $cli->out('
 
 /**
  * Build the container
- * 
+ *
  * ---------------------------------------------------------------------
  */
 
 // build the container
 $container = new \ClanCats\Container\Container;
 
+// normalize endpoint to a base URL
+$endpoint = $cli->arguments->get('endpoint');
+if (!str_contains($endpoint, '://')) {
+	$endpoint = 'http://' . $endpoint;
+}
+$baseUrl = rtrim($endpoint, '/');
+
 // set the parameters
-$container->setParameter('endpoint', $cli->arguments->get('endpoint'));
+$container->setParameter('baseUrl', $baseUrl);
 $container->setParameter('psk', $cli->arguments->get('psk'));
 
+$varDir = __DIR__ . '/../var';
+
+// create PSR-18 / PSR-17 implementations
+$storageDir = $varDir . '/http/';
+
+$fileFactory = new FileFactory(new FilesystemService($storageDir));
+$streamAction = new StreamAction();
+$makePathAction = new MakePathAction();
+$saveResponse = new SaveResponse($fileFactory, $makePathAction, new FindExtensionFromHeadersAction(), $streamAction);
+$saveForPhpstorm = new SaveForPhpstormRequest($fileFactory, $makePathAction, $saveResponse, $streamAction);
+
+$configManager = new ConfigManager();
+$configManager->addDefault(new StoreConfig(enabled: true, serialized: false, onSuccess: is_file($varDir . '/debug')));
+
+$guzzleClient = new \GuzzleHttp\Client([
+	'timeout' => 10,
+	'headers' => [
+		'Cache-Control' => 'no-cache',
+		'User-Agent' => 'PHPTv Client',
+	],
+]);
+$httpClient = new MainHttpClient(new StoreClient($saveForPhpstorm, $configManager, $guzzleClient));
+$httpFactory = new \GuzzleHttp\Psr7\HttpFactory();
+
 // bind the api client
-$container->bind('client', \PHPTv\Client::class)
-    ->arguments([':endpoint', ':psk']);
+$container->bind('client', \PHPTv\Http\Client::class)
+	->arguments([':baseUrl', ':psk', $httpClient, $httpFactory, $httpFactory]);
 
 // bind the repositories
-foreach([
-    'guide' => \PHPTv\Guide::class,
-    'system' => \PHPTv\System::class,
-    'audio' => \PHPTv\Audio::class,
-    'IRCC' => \PHPTv\IRCC::class,
-] as $name => $className) {
-    $container->bind('repo.'.$name, $className)->arguments(['@client']);
+foreach ([
+	         'guide' => \PHPTv\RemoteControl\Guide::class,
+	         'system' => \PHPTv\RemoteControl\System::class,
+	         'audio' => \PHPTv\RemoteControl\Audio::class,
+         ] as $name => $className) {
+	$container->bind('repo.' . $name, $className)->arguments(['@client']);
 }
+
+$container->bind('repo.IRCC', \PHPTv\IRCC::class)
+	->arguments(['@client', ':appName']);
+$container->setParameter('appName', $cli->arguments->get('name'));
 
 // bind the commands
-foreach([
-    // main
-    'phptv' => \PHPTv\PHPTv::class,
-    'execute' => \PHPTv\Commands\ExecuteCommand::class,
+$container->bind('cmd.phptv', PHPTv::class)
+	->arguments(['@repo.guide', '@repo.system', '@repo.IRCC', '@container', $cli]);
 
-    // Help
-    'help.remote' => \PHPTv\Commands\Help\RemoteHelp::class,
-    'help.command' => \PHPTv\Commands\Help\CommandHelp::class,
+$container->bind('cmd.help.command', CommandHelpCommand::class)
+	->arguments([$cli]);
 
-    // Raw forwarding
-    'raw_forward' => \PHPTv\Commands\RawForward::class,
+$container->bind('cmd.execute', ExecuteCommand::class)
+	->arguments(['@container', '@cmd.help.command', $cli]);
 
-    // power managment
-    'toggle_power' => \PHPTv\Commands\TogglePower::class,
+$container->bind('cmd.help.remote', RemoteHelpCommand::class)
+	->arguments([$cli]);
 
-    // Volume
-    'volume' => \PHPTv\Commands\VolumeControl::class,
-] as $name => $className) {
-    $container->bind('cmd.' . $name, $className)->arguments(['@container', $cli]);
-}
+$container->bind('cmd.raw_forward', RawForwardCommand::class)
+	->arguments(['@repo.IRCC', $cli]);
+
+$container->bind('cmd.toggle_power', TogglePowerCommand::class)
+	->arguments(['@repo.IRCC', '@repo.system', $cli]);
+
+$container->bind('cmd.volume', VolumeControlCommand::class)
+	->arguments(['@repo.audio', $cli]);
+
+$container->bind('cmd.input_menu', InputMenuCommand::class)
+	->arguments(['@repo.IRCC', $cli]);
 
 /**
- * Srart PHP Tv 
- * 
+ * Srart PHP Tv
+ *
  * ---------------------------------------------------------------------
  */
+/** @var PHPTv $tv */
 $tv = $container->get('cmd.phptv');
 
 // connect

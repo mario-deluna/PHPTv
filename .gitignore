@@ -1,4 +1,7 @@
+*~
 vendor/
-box.phar
-help.txt
-test.php
+phptv.phar
+var/*
+!var/.gitignore
+bin/test
+.phpunit.result.cache

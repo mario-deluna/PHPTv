@@ -1,107 +1,119 @@
-<?php 
+<?php declare(strict_types = 1);
 
 namespace PHPTv\Commands;
 
+use ArrayObject;
 use ClanCats\Container\Container;
-use League\Climate\Climate;
+use League\CLImate\CLImate;
+use PHPTv\Commands\Help\CommandHelpCommand;
+use function array_column;
+use function array_filter;
+use function array_shift;
+use function array_unique;
+use function array_values;
+use function explode;
+use function readline;
+use function readline_add_history;
+use function readline_clear_history;
+use function readline_completion_function;
+use function sort;
+use function stripos;
+use function trim;
 
-use PHPTv\ReadlineSupportTrait;
-use PHPTv\BaseCommand;
-use PHPTv\Exception;
+final readonly class ExecuteCommand extends BaseCommand
+{
 
-class ExecuteCommand extends BaseCommand
-{   
-    use ReadlineSupportTrait;
+	/**
+	 * @var ArrayObject<int, string>
+	 */
+	protected ArrayObject $readlineCommandHistory;
 
-    /**
-     * Construct every command with the container and command line interface
-     * 
-     * @param Container             $container
-     * @param Climate               $cli
-     */
-    public function __construct(Container $container, Climate $cli)
-    {
-        parent::__construct($container, $cli);
+	public function __construct(
+		private Container $container,
+		private CommandHelpCommand $helpCommand,
+		CLImate $cli,
+	)
+	{
+		parent::__construct($cli);
 
-        // first fill the command history with available commands
-        $this->readlineCommandHistory = array_column($container->get('cmd.help.command')->keyMapping, 'command');
+		$commands = array_column(CommandHelpCommand::KEY_MAPPING, 'command');
+		sort($commands);
+		$this->readlineCommandHistory = new ArrayObject($commands);
+	}
 
-        // inital sort the command history
-        sort($this->readlineCommandHistory);
-    }
-    /** 
-     * Execute the command
-     * 
-     * @return void
-     */
-    public function execute(array $args = [])
-    {   
-        $this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands. Press ctrl+d to exit.');
+	/**
+	 * @param array<string> $args
+	 */
+	public function execute(array $args = []): void
+	{
+		$this->cli->out('Please enter the command you wish to execute. Enter "help" to list the available commands. Press ctrl+d to exit.');
 
-        // always clear the history and rebuild
-        // this allows us to have diffrent histories per command
-        $this->readlinePrepare();
+		$this->readlinePrepare();
 
-        // add realine completition
-        readline_completion_function(function($input, $index) 
-        {
-            if (empty($input)) 
-            {
-                return array_unique(array_filter($this->readlineCommandHistory));
-            }
+		readline_completion_function(function (string $input, int $index): array {
+			if ($input === '') {
+				return array_unique(array_filter($this->readlineCommandHistory->getArrayCopy(), static fn (string $v): bool => $v !== ''));
+			}
 
-            $matches = array();
-            foreach($this->readlineCommandHistory as $command)
-            {
-                if (stripos($command, $input) === 0)
-                {
-                    $matches[] = $command;
-                }
-            }
-            return $matches;
-        });
+			$matches = [];
+			foreach ($this->readlineCommandHistory as $command) {
+				if (stripos($command, $input) === 0) {
+					$matches[] = $command;
+				}
+			}
+			return $matches;
+		});
 
+		$commandString = trim((string) $this->readlinePromt('> '));
 
-        // read the command 
-        $commandString = trim($this->readlinePromt('> '));
+		$commandParts = explode(' ', $commandString);
+		$commandName = array_shift($commandParts);
+		$commandArgs = array_values(array_filter($commandParts, static fn (string $v): bool => $v !== ''));
 
-        // split arguments 
-        $commandParts = explode(' ', $commandString);
-        $commandName = array_shift($commandParts);
-        $commandArgs = array_filter($commandParts);
+		if ($commandName === '') {
+			return;
+		}
 
-        // check empty
-        if (empty($commandName))
-        {
-            return;
-        }
+		if ($commandName === 'help') {
+			$this->helpCommand->execute();
+			$this->execute();
+			return;
+		}
 
-        // check for help
-        if ($commandName === 'help')
-        {
-            $this->container->get('cmd.help.command')->execute();
-            $this->execute();
-            return;
-        }
+		if ($commandName === 'execute') {
+			$this->cli->error('You are one of the funny kind huh?');
+			return;
+		}
 
-        // check for recursion
-        if ($commandName === 'execute')
-        {
-            $this->cli->error('You are one of the funny kind huh?'); 
-            return;
-        }
+		if (!$this->container->has('cmd.' . $commandName)) {
+			$this->cli->error('There is no command with the name "' . $commandName . '" available.');
+			return;
+		}
 
-        if (!$this->container->has('cmd.' . $commandName))
-        {
-            $this->cli->error('There is no command with the name "' . $commandName . '" available.'); 
-            return;
-        }
+		$this->readlineAddHistory($commandString);
 
-        // update the current history
-        $this->readlineAddHistory($commandString);
+		/** @var BaseCommand $cmd */
+		$cmd = $this->container->get('cmd.' . $commandName);
+		$cmd->execute($commandArgs);
+	}
 
-        // execute
-        $cmd = $this->container->get('cmd.' . $commandName);
-        $cmd->execute($commandArgs);
-    }
+	protected function readlineAddHistory(string $command): void
+	{
+		$this->readlineCommandHistory->append($command);
+	}
+
+	protected function readlinePromt(string $prefix): string|false
+	{
+		return readline($prefix);
+	}
+
+	protected function readlinePrepare(): void
+	{
+		readline_clear_history();
+
+		foreach ($this->readlineCommandHistory->getIterator() as $command) {
+			readline_add_history($command);
+		}
+	}
+
 }
