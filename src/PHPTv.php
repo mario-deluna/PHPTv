@@ -5,6 +5,7 @@ namespace PHPTv;
 use ClanCats\Container\Container;
 use League\CLImate\CLImate;
 use PHPTv\Commands\BaseCommand;
+use PHPTv\Crate\ServiceProtocolCrate;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\IrccException;
 use PHPTv\Exceptions\LogicException;
@@ -14,6 +15,7 @@ use PHPTv\RemoteControl\System;
 use function bin2hex;
 use function count;
 use function fread;
+use function get_object_vars;
 use function readline;
 use function system;
 use function trim;
@@ -62,15 +64,15 @@ final class PHPTv extends BaseCommand
 	}
 
 	/**
-	 * @param array<mixed> $protocols
+	 * @param list<ServiceProtocolCrate> $protocols
 	 */
 	private function displayAvailableServiceProtocols(array $protocols): void
 	{
 		$this->cli->blue(count($protocols) . ' service protocols are available: ');
 
 		$protocolNames = [];
-		foreach ($protocols as $p) {
-			$protocolNames[] = $p[0];
+		foreach ($protocols as $protocol) {
+			$protocolNames[] = $protocol->name;
 		}
 
 		$this->cli->columns($protocolNames);
@@ -82,8 +84,8 @@ final class PHPTv extends BaseCommand
 		$this->cli->blue('TV Interface:');
 
 		try {
-			$infos = $this->system->getInterfaceInformation();
-			$this->cli->columns($infos[0]);
+			$information = $this->system->getInterfaceInformation();
+			$this->cli->columns(get_object_vars($information));
 		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
 			$this->cli->error('Could not load device info: ' . $e->getMessage());
 		}

@@ -3,6 +3,7 @@
 namespace PHPTv;
 
 use PHPTv\Contracts\RemoteInterface;
+use PHPTv\Crate\IrccNameValueCrate;
 use PHPTv\Exceptions\HttpAuthException;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\IrccException;
@@ -37,15 +38,16 @@ final class IRCC implements RemoteInterface
 	public function refreshAvailableCommands(): void
 	{
 		try {
-			$response = $this->client->requestMethod('system', 'getRemoteControllerInfo')[1];
+			$response = $this->client->requestMethod('system', 'getRemoteControllerInfo');
 		} catch (HttpBadResponseException | UnexpectedTvResponseException $e) {
 			return;
 		}
 
 		$this->availableCommands = [];
 
-		foreach ($response as $command) {
-			$this->availableCommands[(string) $command['name']] = (string) $command['value'];
+		foreach ($response[1] as $item) {
+			$command = IrccNameValueCrate::fromArray($item);
+			$this->availableCommands[$command->name] = $command->value;
 		}
 	}
 

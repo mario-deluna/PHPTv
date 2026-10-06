@@ -2,6 +2,8 @@
 
 namespace PHPTv\RemoteControl;
 
+use PHPTv\Crate\InterfaceInformationCrate;
+use PHPTv\Enum\PowerStatus;
 use PHPTv\Exceptions\HttpBadResponseException;
 use PHPTv\Exceptions\UnexpectedTvResponseException;
 
@@ -11,23 +13,21 @@ final class System extends RemoteControl
 	protected string $tvApiEndpoint = 'system';
 
 	/**
-	 * @return array<mixed>
-	 *
 	 * @throws HttpBadResponseException
 	 * @throws UnexpectedTvResponseException
 	 */
-	public function getInterfaceInformation(): array
+	public function getInterfaceInformation(): InterfaceInformationCrate
 	{
-		return $this->request('getInterfaceInformation');
+		return InterfaceInformationCrate::fromArray($this->request('getInterfaceInformation')[0]);
 	}
 
 	/**
 	 * @throws HttpBadResponseException
 	 * @throws UnexpectedTvResponseException
 	 */
-	public function getPowerStatus(): string
+	public function getPowerStatus(): PowerStatus
 	{
-		return $this->request('getPowerStatus')[0]['status'] ?? 'unknown';
+		return PowerStatus::from($this->request('getPowerStatus')[0]['status']);
 	}
 
 	/**
@@ -36,7 +36,7 @@ final class System extends RemoteControl
 	 */
 	public function isOn(): bool
 	{
-		return $this->getPowerStatus() === 'active';
+		return $this->getPowerStatus() === PowerStatus::Active;
 	}
 
 }
