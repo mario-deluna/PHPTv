@@ -2,10 +2,13 @@
 
 namespace PHPTv;
 
+use PHPTv\Contracts\RemoteInterface;
+use PHPTv\Exceptions\AuthException;
 use PHPTv\Exceptions\LogicException;
 use PHPTv\Http\Client;
+use function md5;
 
-final class IRCC
+final class IRCC implements RemoteInterface
 {
 
 	/**
@@ -13,7 +16,10 @@ final class IRCC
 	 */
 	private array $availableCommands = [];
 
-	public function __construct(private Client $client)
+	public function __construct(
+		private Client $client,
+		private string $appName = 'PHPTv',
+	)
 	{
 	}
 
@@ -50,7 +56,7 @@ final class IRCC
 	 */
 	public function startAuthentication(): bool
 	{
-		$cookie = $this->client->actRegister('PHPTv:1', 'PHPTv');
+		$cookie = $this->client->actRegister(md5($this->appName . ':1'), $this->appName);
 
 		if ($cookie !== null) {
 			$this->client->setAuthCookie($cookie);
@@ -67,7 +73,7 @@ final class IRCC
 	 */
 	public function confirmAuthentication(string $pin): void
 	{
-		$cookie = $this->client->actRegister('PHPTv:1', 'PHPTv', $pin);
+		$cookie = $this->client->actRegister($this->appName . ':1', $this->appName, $pin);
 
 		if ($cookie === null) {
 			throw new LogicException('IRCC authentication failed: invalid PIN.');
@@ -79,7 +85,7 @@ final class IRCC
 	/**
 	 * @throws LogicException
 	 */
-	public function send(string $codeName): string
+	public function send(string $codeName): void
 	{
 		if (!isset($this->availableCommands[$codeName])) {
 			throw new LogicException(
@@ -87,7 +93,19 @@ final class IRCC
 			);
 		}
 
-		return $this->client->sendIRCC($this->availableCommands[$codeName]);
+		try {
+			$this->client->sendIRCC($this->availableCommands[$codeName]);
+		} catch (AuthException $e) {
+			if (!$this->startAuthentication()) {
+				throw new LogicException('IRCC session expired and re-authentication requires a PIN. Restart the app.');
+			}
+
+			try {
+				$this->client->sendIRCC($this->availableCommands[$codeName]);
+			} catch (AuthException $e) {
+				throw new LogicException('IRCC re-authentication succeeded but command still failed.', 0, $e);
+			}
+		}
 	}
 
 }

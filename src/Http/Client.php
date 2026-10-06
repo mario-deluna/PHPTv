@@ -2,6 +2,7 @@
 
 namespace PHPTv\Http;
 
+use PHPTv\Exceptions\AuthException;
 use PHPTv\Exceptions\LogicException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -33,6 +34,11 @@ final class Client
 	public function setAuthCookie(string $cookie): void
 	{
 		$this->authCookie = $cookie;
+	}
+
+	public function clearAuthCookie(): void
+	{
+		$this->authCookie = null;
 	}
 
 	/**
@@ -87,9 +93,10 @@ final class Client
 	}
 
 	/**
+	 * @throws AuthException
 	 * @throws LogicException
 	 */
-	public function sendIRCC(string $irccCode): string
+	public function sendIRCC(string $irccCode): void
 	{
 		$body = '<?xml version="1.0"?>'
 			. '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
@@ -108,7 +115,22 @@ final class Client
 			$request = $request->withHeader('X-Auth-PSK', $this->psk);
 		}
 
-		return $this->send($request);
+		try {
+			$response = $this->httpClient->sendRequest($request);
+		} catch (ClientExceptionInterface $e) {
+			throw new LogicException('Request failed: ' . $e->getMessage(), 0, $e);
+		}
+
+		$status = $response->getStatusCode();
+
+		if ($status === 401 || $status === 403 || $status === 404) {
+			$this->authCookie = null;
+			throw new AuthException('IRCC session expired (HTTP ' . $status . ').');
+		}
+
+		if ($status < 200 || $status >= 300) {
+			throw new LogicException('Received bad status code: ' . $status . "\n\nURL:\n" . $request->getUri());
+		}
 	}
 
 	/**

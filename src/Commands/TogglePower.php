@@ -3,14 +3,14 @@
 namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
-use PHPTv\IRCC;
+use PHPTv\Contracts\RemoteInterface;
 use PHPTv\RemoteControl\System;
 
 final class TogglePower extends BaseCommand
 {
 
 	public function __construct(
-		private IRCC $ircc,
+		private RemoteInterface $remote,
 		private System $system,
 		CLImate $cli,
 	)
@@ -25,10 +25,10 @@ final class TogglePower extends BaseCommand
 	{
 		if ($this->system->isOn()) {
 			$this->cli->out('Turning the tv Off...');
-			$this->ircc->send('PowerOff');
+			$this->remote->send('PowerOff');
 		} else {
 			$this->cli->out('Turning the tv On...');
-			$this->ircc->send('TvPower');
+			$this->remote->send('TvPower');
 		}
 	}
 

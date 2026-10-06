@@ -3,8 +3,8 @@
 namespace PHPTv\Commands;
 
 use League\CLImate\CLImate;
+use PHPTv\Contracts\RemoteInterface;
 use PHPTv\Exceptions\LogicException;
-use PHPTv\IRCC;
 use function array_keys;
 use function ucfirst;
 
@@ -12,7 +12,7 @@ final class RawForward extends BaseCommand
 {
 
 	public function __construct(
-		private IRCC $ircc,
+		private RemoteInterface $remote,
 		CLImate $cli,
 	)
 	{
@@ -24,10 +24,10 @@ final class RawForward extends BaseCommand
 	 */
 	public function execute(array $args = []): void
 	{
-		$this->ircc->refreshAvailableCommands();
+		$this->remote->refreshAvailableCommands();
 
 		$this->cli->blue('Available commands:');
-		$this->cli->columns(array_keys($this->ircc->getAvailableCommands()));
+		$this->cli->columns(array_keys($this->remote->getAvailableCommands()));
 
 		$this->cli->br();
 		$this->cli->out('Simply enter ":e" to go back to the remote.');
@@ -47,7 +47,7 @@ final class RawForward extends BaseCommand
 			}
 
 			try {
-				$this->ircc->send(ucfirst($inputString));
+				$this->remote->send(ucfirst($inputString));
 			} catch (LogicException $e) {
 				$this->cli->error($e->getMessage());
 			}

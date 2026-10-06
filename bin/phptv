@@ -44,6 +44,13 @@ $cli->arguments->add([
         'description' => 'Your TVs Pre-Shared Key (PSK). You can set the key under: Settings -> Network -> Home network setup -> ip control. There you have to enable the "Pre-Shared" Authentication.',
         'required'    => true,
     ],
+
+    'name' => [
+        'prefix'      => 'n',
+        'longPrefix'  => 'name',
+        'description' => 'Application name shown on the TV during IRCC authentication.',
+        'defaultValue' => 'PHPTv',
+    ],
 ]);
 
 // check if everything that we need is there..
@@ -118,10 +125,13 @@ foreach([
     'guide' => \PHPTv\RemoteControl\Guide::class,
     'system' => \PHPTv\RemoteControl\System::class,
     'audio' => \PHPTv\RemoteControl\Audio::class,
-    'IRCC' => \PHPTv\IRCC::class,
 ] as $name => $className) {
     $container->bind('repo.'.$name, $className)->arguments(['@client']);
 }
+
+$container->bind('repo.IRCC', \PHPTv\IRCC::class)
+    ->arguments(['@client', ':appName']);
+$container->setParameter('appName', $cli->arguments->get('name'));
 
 // bind the commands
 $container->bind('cmd.phptv', \PHPTv\PHPTv::class)
