@@ -19,16 +19,23 @@
         	"PHPTv\\": "src/"
         }
     },
+	"autoload-dev": {
+		"psr-4": {
+			"PHPTv\\Tests\\": "tests/"
+		}
+	},
 	"bin": ["bin/phptv"],
 	"require-dev": {
 		"phpstan/phpstan": "^2.0",
 		"shipmonk/coding-standard": "*",
 		"phpstan/phpstan-strict-rules": "^2.0",
-		"humbug/box": "^4.7"
+		"humbug/box": "^4.7",
+		"phpunit/phpunit": "^12.5"
 	},
 	"scripts": {
 		"stan": "vendor/bin/phpstan analyse",
 		"cs": "vendor/bin/phpcs",
+		"test": "vendor/bin/phpunit",
 		"cs-fix": "vendor/bin/phpcbf",
 		"qa": ["@cs", "@stan"],
 		"build": "vendor/bin/box compile"
