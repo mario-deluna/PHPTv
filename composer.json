@@ -4,9 +4,13 @@
 	"description": "PHP Remote control for Sony Android TVs.",
 	"license": "MIT",
 	"require": {
-		"php": ">=7.0",
+		"php": ">=8.0",
+		"ext-json": "*",
+		"clancats/container": "^1.3",
 		"league/climate": "^3.0",
-		"clancats/container": "^1.3"
+		"psr/http-client": "^1.0",
+		"psr/http-factory": "^1.0",
+		"psr/http-message": "^1.0 || ^2.0"
 	},
 	"autoload": {
         "psr-4": {
@@ -15,6 +19,10 @@
     },
 	"bin": ["bin/phptv"],
 	"require-dev": {
+		"guzzlehttp/guzzle": "^7.5",
 		"phpstan/phpstan": "^2.0"
+	},
+	"suggest": {
+		"guzzlehttp/guzzle": "As default implementation for PSR-7, PSR-17 and PSR-18 standards."
 	}
 }

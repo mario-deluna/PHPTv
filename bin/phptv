@@ -63,13 +63,30 @@ $cli->out('
 // build the container
 $container = new \ClanCats\Container\Container;
 
+// normalize endpoint to a base URL
+$endpoint = $cli->arguments->get('endpoint');
+if (!str_contains($endpoint, '://')) {
+    $endpoint = 'http://' . $endpoint;
+}
+$baseUrl = rtrim($endpoint, '/');
+
 // set the parameters
-$container->setParameter('endpoint', $cli->arguments->get('endpoint'));
+$container->setParameter('baseUrl', $baseUrl);
 $container->setParameter('psk', $cli->arguments->get('psk'));
+
+// create PSR-18 / PSR-17 implementations
+$httpClient = new \GuzzleHttp\Client([
+    'timeout' => 10,
+    'headers' => [
+        'Cache-Control' => 'no-cache',
+        'User-Agent'    => 'PHPTv Client',
+    ],
+]);
+$httpFactory = new \GuzzleHttp\Psr7\HttpFactory();
 
 // bind the api client
 $container->bind('client', \PHPTv\Client::class)
-    ->arguments([':endpoint', ':psk']);
+    ->arguments([':baseUrl', ':psk', $httpClient, $httpFactory, $httpFactory]);
 
 // bind the repositories
 foreach([
