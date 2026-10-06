@@ -8,13 +8,17 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use function base64_encode;
 use function is_array;
 use function json_decode;
 use function json_encode;
+use function preg_match;
 use function print_r;
 
 final class Client
 {
+
+	private ?string $authCookie = null;
 
 	public function __construct(
 		private string $baseUrl,
@@ -24,6 +28,62 @@ final class Client
 		private StreamFactoryInterface $streamFactory,
 	)
 	{
+	}
+
+	public function setAuthCookie(string $cookie): void
+	{
+		$this->authCookie = $cookie;
+	}
+
+	/**
+	 * Initiates or confirms device registration for IRCC cookie auth.
+	 *
+	 * Pass null for $pin on the first call — the TV will display a PIN on screen
+	 * and return null here. Pass the displayed PIN to confirm and receive the cookie.
+	 *
+	 * @throws LogicException
+	 */
+	public function actRegister(
+		string $clientId,
+		string $nickname,
+		?string $pin = null,
+	): ?string
+	{
+		$body = (string) json_encode([
+			'method' => 'actRegister',
+			'params' => [
+				['clientid' => $clientId, 'nickname' => $nickname],
+				[['value' => 'yes', 'function' => 'WOL']],
+			],
+			'id' => 1,
+			'version' => '1.0',
+		]);
+
+		$request = $this->requestFactory->createRequest('POST', $this->baseUrl . '/sony/accessControl')
+			->withHeader('Content-Type', 'application/json')
+			->withBody($this->streamFactory->createStream($body));
+
+		if ($pin !== null) {
+			$request = $request->withHeader('Authorization', 'Basic ' . base64_encode(':' . $pin));
+		}
+
+		try {
+			$response = $this->httpClient->sendRequest($request);
+		} catch (ClientExceptionInterface $e) {
+			throw new LogicException('actRegister failed: ' . $e->getMessage(), 0, $e);
+		}
+
+		if ($response->getStatusCode() === 401) {
+			return null;
+		}
+
+		if ($response->getStatusCode() !== 200) {
+			throw new LogicException('actRegister returned unexpected status: ' . $response->getStatusCode());
+		}
+
+		preg_match('/auth=([^;]+)/', $response->getHeaderLine('Set-Cookie'), $matches);
+
+		return $matches[1] ?? '';
 	}
 
 	/**
@@ -38,10 +98,15 @@ final class Client
 			. '</u:X_SendIRCC></s:Body></s:Envelope>';
 
 		$request = $this->requestFactory->createRequest('POST', $this->baseUrl . '/sony/IRCC')
-			->withHeader('X-Auth-PSK', $this->psk)
 			->withHeader('SOAPACTION', '"urn:schemas-sony-com:service:IRCC:1#X_SendIRCC"')
 			->withHeader('Content-Type', 'text/xml; charset=UTF-8')
 			->withBody($this->streamFactory->createStream($body));
+
+		if ($this->authCookie !== null) {
+			$request = $request->withHeader('Cookie', 'auth=' . $this->authCookie);
+		} else {
+			$request = $request->withHeader('X-Auth-PSK', $this->psk);
+		}
 
 		return $this->send($request);
 	}

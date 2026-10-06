@@ -11,7 +11,9 @@ use PHPTv\RemoteControl\System;
 use function count;
 use function fread;
 use function ord;
+use function readline;
 use function system;
+use function trim;
 use const STDIN;
 
 final class PHPTv extends BaseCommand
@@ -52,6 +54,7 @@ final class PHPTv extends BaseCommand
 
 		$this->displayAvailableServiceProtocols($protocols);
 		$this->showDeviceInfos();
+		$this->authenticateIRCC();
 		$this->startCMDLoop();
 	}
 
@@ -76,6 +79,29 @@ final class PHPTv extends BaseCommand
 		$this->cli->blue('TV Interface:');
 		$infos = $this->system->getInterfaceInformation();
 		$this->cli->columns($infos[0]);
+	}
+
+	private function authenticateIRCC(): void
+	{
+		$this->cli->br();
+
+		if ($this->ircc->startAuthentication()) {
+			$this->cli->info('IRCC ready.');
+			return;
+		}
+
+		$this->cli->yellow('A PIN has been displayed on your TV screen.');
+		system('stty sane');
+		$pin = trim((string) readline('Enter PIN: '));
+		system('stty -echo -icanon');
+
+		try {
+			$this->ircc->confirmAuthentication($pin);
+			$this->cli->info('IRCC authenticated.');
+		} catch (LogicException $e) {
+			$this->cli->error('IRCC authentication failed: ' . $e->getMessage());
+			$this->cli->yellow('Key presses will not work until the TV is reachable and authenticated.');
+		}
 	}
 
 	private function executeCommand(string $name): void
