@@ -1,3 +1,6 @@
 *~
 vendor/
 phptv.phar
+var/*
+!var/.gitignore
+bin/test

@@ -9,12 +9,25 @@ if (extension_loaded('phar') && ($uri = Phar::running())) {
 
 // import Climate
 use League\CLImate\{CLImate};
+use StrictPhp\HttpClients\Actions\FindExtensionFromHeadersAction;
+use StrictPhp\HttpClients\Actions\StreamAction;
+use StrictPhp\HttpClients\Clients\Event\Actions\MakePathAction;
+use StrictPhp\HttpClients\Clients\MainHttp\MainHttpClient;
+use StrictPhp\HttpClients\Clients\Store\StoreClient;
+use StrictPhp\HttpClients\Clients\Store\StoreConfig;
+use StrictPhp\HttpClients\Filesystem\Factories\FileFactory;
+use StrictPhp\HttpClients\Managers\ConfigManager;
+use StrictPhp\HttpClients\Requests\SaveForPhpstormRequest;
+use StrictPhp\HttpClients\Responses\SaveResponse;
+use StrictPhp\HttpClients\Services\FilesystemService;
 
 /**
  * Prepare the CLI
  *
  * ---------------------------------------------------------------------
  */
+
+date_default_timezone_set('Europe/Prague');
 
 // create a climate instance
 $cli = new CLImate;
@@ -72,14 +85,28 @@ $baseUrl = rtrim($endpoint, '/');
 $container->setParameter('baseUrl', $baseUrl);
 $container->setParameter('psk', $cli->arguments->get('psk'));
 
+$varDir = __DIR__ . '/../var';
+
 // create PSR-18 / PSR-17 implementations
-$httpClient = new \GuzzleHttp\Client([
+$storageDir = $varDir . '/http/';
+
+$fileFactory = new FileFactory(new FilesystemService($storageDir));
+$streamAction = new StreamAction();
+$makePathAction = new MakePathAction();
+$saveResponse = new SaveResponse($fileFactory, $makePathAction, new FindExtensionFromHeadersAction(), $streamAction);
+$saveForPhpstorm = new SaveForPhpstormRequest($fileFactory, $makePathAction, $saveResponse, $streamAction);
+
+$configManager = new ConfigManager();
+$configManager->addDefault(new StoreConfig(enabled: true, serialized: false, onSuccess: is_file($varDir . '/debug')));
+
+$guzzleClient = new \GuzzleHttp\Client([
     'timeout' => 10,
     'headers' => [
         'Cache-Control' => 'no-cache',
         'User-Agent'    => 'PHPTv Client',
     ],
 ]);
+$httpClient = new MainHttpClient(new StoreClient($saveForPhpstorm, $configManager, $guzzleClient));
 $httpFactory = new \GuzzleHttp\Psr7\HttpFactory();
 
 // bind the api client
