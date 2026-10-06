@@ -1,21 +1,29 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
-namespace PHPTv;
+namespace PHPTv\Http;
 
+use PHPTv\Exceptions\LogicException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use function is_array;
+use function json_decode;
+use function json_encode;
+use function print_r;
 
-class Client
+final class Client
 {
+
     public function __construct(
         private string $baseUrl,
         private string $psk,
         private ClientInterface $httpClient,
         private RequestFactoryInterface $requestFactory,
         private StreamFactoryInterface $streamFactory,
-    ) {
+    )
+    {
     }
 
     public function sendIRCC(string $irccCode): string
@@ -36,10 +44,15 @@ class Client
     }
 
     /**
-     * @param array<mixed> $params
+     * @param array<string, string> $params
      * @return array<mixed>
      */
-    public function requestMethod(string $endpoint, string $method, array $params = [], string $version = '1.0'): array
+    public function requestMethod(
+        string $endpoint,
+        string $method,
+        array $params = [],
+        string $version = '1.0',
+    ): array
     {
         $request = $this->requestFactory->createRequest('POST', $this->baseUrl . '/sony/' . $endpoint)
             ->withHeader('X-Auth-PSK', $this->psk)
@@ -55,29 +68,30 @@ class Client
         $response = json_decode($responseBody, true);
 
         if (!is_array($response)) {
-            throw new Exception('Could not decode response.');
+            throw new LogicException('Could not decode response.');
         }
 
         if (!isset($response['result']) && !isset($response['results'])) {
-            throw new Exception('Unexpected response from TV Api. ' . print_r($response, true));
+            throw new LogicException('Unexpected response from TV Api. ' . print_r($response, true));
         }
 
         return $response['result'] ?? $response['results'];
     }
 
-    private function send(\Psr\Http\Message\RequestInterface $request): string
+    private function send(RequestInterface $request): string
     {
         try {
             $response = $this->httpClient->sendRequest($request);
         } catch (ClientExceptionInterface $e) {
-            throw new Exception('Request failed: ' . $e->getMessage(), 0, $e);
+            throw new LogicException('Request failed: ' . $e->getMessage(), 0, $e);
         }
 
         $status = $response->getStatusCode();
         if ($status < 200 || $status >= 300) {
-            throw new Exception('Received bad status code: ' . $status . "\n\nURL:\n" . $request->getUri());
+            throw new LogicException('Received bad status code: ' . $status . "\n\nURL:\n" . $request->getUri());
         }
 
         return $response->getBody()->getContents();
     }
+
 }

@@ -1,32 +1,33 @@
-<?php 
+<?php declare(strict_types = 1);
 
 namespace PHPTv\Commands;
 
-use PHPTv\BaseCommand;
-use PHPTv\Exception;
+use League\CLImate\CLImate;
+use PHPTv\IRCC;
+use PHPTv\RemoteControl\System;
 
-class TogglePower extends BaseCommand
+final class TogglePower extends BaseCommand
 {
-    /** 
-     * Execute the command
-     * 
-     * @return void
-     */
-    public function execute(array $args = [])
-    {   
-        $ircc = $this->repo('IRCC');
 
-        // turn tv off
-        if ($this->repo('system')->isOn()) 
-        {
+    public function __construct(
+        private IRCC $ircc,
+        private System $system,
+        CLImate $cli,
+    )
+    {
+        parent::__construct($cli);
+    }
+
+    /** @param array<string> $args */
+    public function execute(array $args = []): void
+    {
+        if ($this->system->isOn()) {
             $this->cli->out('Turning the tv Off...');
-            $ircc->send('PowerOff');
-        } 
-        // turn on
-        else 
-        {
+            $this->ircc->send('PowerOff');
+        } else {
             $this->cli->out('Turning the tv On...');
-            $ircc->send('TvPower');
+            $this->ircc->send('TvPower');
         }
     }
+
 }

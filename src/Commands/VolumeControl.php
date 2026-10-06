@@ -1,40 +1,41 @@
-<?php 
+<?php declare(strict_types = 1);
 
 namespace PHPTv\Commands;
 
-use PHPTv\BaseCommand;
-use PHPTv\Exception;
+use League\CLImate\CLImate;
+use PHPTv\RemoteControl\Audio;
 
-class VolumeControl extends BaseCommand
+final class VolumeControl extends BaseCommand
 {
-    /** 
-     * Execute the command
-     * 
-     * @return void
-     */
-    public function execute(array $args = [])
-    {   
-        if (!isset($args[0]))
-        {
-            return $this->printVolumeInformation();
-        }
 
-        // get the target volume
-        $targetVolume = $args[0];
-
-        $target = 'speaker';
-        if (isset($args[1])) {
-            $target = 'headphone';
-        }
-
-        $this->cli->out('setting volume to: '. $targetVolume . ' on ' . $target);
-
-        var_dump($this->repo('audio')->setAudioVolume($targetVolume, $target));
-    }
-
-    protected function printVolumeInformation()
+    public function __construct(
+        private Audio $audio,
+        CLImate $cli,
+    )
     {
-        $this->cli->table($this->repo('audio')->getVolumeInformation());
-        $this->cli->out("You can set the volume between 0 and 100.\n - volume 40 # Sets the volume to 40\n - volume 40 -a # Sets the volume on the speakers and headphones.");
+        parent::__construct($cli);
     }
+
+    /** @param array<string> $args */
+    public function execute(array $args = []): void
+    {
+        if (!isset($args[0])) {
+            $this->printVolumeInformation();
+            return;
+        }
+
+        $targetVolume = $args[0];
+        $target = isset($args[1]) ? 'headphone' : 'speaker';
+
+        $this->cli->out('Setting volume to: ' . $targetVolume . ' on ' . $target);
+        $this->audio->setAudioVolume($targetVolume, $target);
+        $this->cli->out('Done.');
+    }
+
+    protected function printVolumeInformation(): void
+    {
+        $this->cli->table($this->audio->getVolumeInformation());
+        $this->cli->out("You can set the volume between 0 and 100.\n - volume 40 # Sets the volume to 40\n - volume 40 -a # Sets the volume on the speakers and headphones.");
+    }
+
 }

@@ -1,57 +1,54 @@
-<?php 
+<?php declare(strict_types = 1);
 
 namespace PHPTv;
 
-class IRCC 
+use PHPTv\Exceptions\LogicException;
+use PHPTv\Http\Client;
+
+final class IRCC
 {
-    use ClientAwareTrait;
 
     /**
-     * The Command mapping
-     * 
-     * @var array
+     * @var array<string, string>
      */
-    protected $availableCommands = [];
+    private array $availableCommands = [];
 
-    public function getAvailableCommands() : array
+    public function __construct(private Client $client)
+    {
+    }
+
+    /** @return array<string, string> */
+    public function getAvailableCommands(): array
     {
         return $this->availableCommands;
     }
 
-    /**
-     * Load the remote infos from the TV Api
-     * 
-     * @return bool returns true on success
-     */
-    public function refreshAvailableCommands()
+    public function refreshAvailableCommands(): bool
     {
         try {
             $response = $this->client->requestMethod('system', 'getRemoteControllerInfo')[1];
-        } 
-        catch(Exception $e) { return false; }
+        } catch (LogicException $e) {
+            return false;
+        }
 
-        // reset current commands
         $this->availableCommands = [];
 
-        foreach ($response as $command) 
-        {
-            $this->availableCommands[$command['name']] = $command['value'];
+        foreach ($response as $command) {
+            $this->availableCommands[(string) $command['name']] = (string) $command['value'];
         }
 
         return true;
     }
 
-    /**
-     * Send an IRCC by name
-     * 
-     * @param string            $codeName
-     */
-    public function send(string $codeName) 
+    public function send(string $codeName): string
     {
         if (!isset($this->availableCommands[$codeName])) {
-            throw new Exception('Invalid command "'. $codeName .'" given. It does not seem to be supported by the TV. Try refreshing the available commands.');
+            throw new LogicException(
+                'Invalid command "' . $codeName . '" given. It does not seem to be supported by the TV. Try refreshing the available commands.',
+            );
         }
 
         return $this->client->sendIRCC($this->availableCommands[$codeName]);
     }
+
 }

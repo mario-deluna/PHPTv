@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?php 
+<?php
 
 if (extension_loaded('phar') && ($uri = Phar::running())) {
     require "$uri/vendor/autoload.php";
@@ -8,13 +8,11 @@ if (extension_loaded('phar') && ($uri = Phar::running())) {
 }
 
 // import Climate
-use League\CLImate\{
-    CLImate
-};
+use League\CLImate\{CLImate};
 
 /**
- * Prepare the CLI 
- * 
+ * Prepare the CLI
+ *
  * ---------------------------------------------------------------------
  */
 
@@ -56,7 +54,7 @@ $cli->out('
 
 /**
  * Build the container
- * 
+ *
  * ---------------------------------------------------------------------
  */
 
@@ -85,44 +83,44 @@ $httpClient = new \GuzzleHttp\Client([
 $httpFactory = new \GuzzleHttp\Psr7\HttpFactory();
 
 // bind the api client
-$container->bind('client', \PHPTv\Client::class)
+$container->bind('client', \PHPTv\Http\Client::class)
     ->arguments([':baseUrl', ':psk', $httpClient, $httpFactory, $httpFactory]);
 
 // bind the repositories
 foreach([
-    'guide' => \PHPTv\Guide::class,
-    'system' => \PHPTv\System::class,
-    'audio' => \PHPTv\Audio::class,
+    'guide' => \PHPTv\RemoteControl\Guide::class,
+    'system' => \PHPTv\RemoteControl\System::class,
+    'audio' => \PHPTv\RemoteControl\Audio::class,
     'IRCC' => \PHPTv\IRCC::class,
 ] as $name => $className) {
     $container->bind('repo.'.$name, $className)->arguments(['@client']);
 }
 
 // bind the commands
-foreach([
-    // main
-    'phptv' => \PHPTv\PHPTv::class,
-    'execute' => \PHPTv\Commands\ExecuteCommand::class,
+$container->bind('cmd.phptv', \PHPTv\PHPTv::class)
+    ->arguments(['@repo.guide', '@repo.system', '@repo.IRCC', '@container', $cli]);
 
-    // Help
-    'help.remote' => \PHPTv\Commands\Help\RemoteHelp::class,
-    'help.command' => \PHPTv\Commands\Help\CommandHelp::class,
+$container->bind('cmd.help.command', \PHPTv\Commands\Help\CommandHelpCommand::class)
+    ->arguments([$cli]);
 
-    // Raw forwarding
-    'raw_forward' => \PHPTv\Commands\RawForward::class,
+$container->bind('cmd.execute', \PHPTv\Commands\ExecuteCommand::class)
+    ->arguments(['@container', '@cmd.help.command', $cli]);
 
-    // power managment
-    'toggle_power' => \PHPTv\Commands\TogglePower::class,
+$container->bind('cmd.help.remote', \PHPTv\Commands\Help\RemoteHelpCommand::class)
+    ->arguments([$cli]);
 
-    // Volume
-    'volume' => \PHPTv\Commands\VolumeControl::class,
-] as $name => $className) {
-    $container->bind('cmd.' . $name, $className)->arguments(['@container', $cli]);
-}
+$container->bind('cmd.raw_forward', \PHPTv\Commands\RawForward::class)
+    ->arguments(['@repo.IRCC', $cli]);
+
+$container->bind('cmd.toggle_power', \PHPTv\Commands\TogglePower::class)
+    ->arguments(['@repo.IRCC', '@repo.system', $cli]);
+
+$container->bind('cmd.volume', \PHPTv\Commands\VolumeControl::class)
+    ->arguments(['@repo.audio', $cli]);
 
 /**
- * Srart PHP Tv 
- * 
+ * Srart PHP Tv
+ *
  * ---------------------------------------------------------------------
  */
 $tv = $container->get('cmd.phptv');

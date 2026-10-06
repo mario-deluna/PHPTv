@@ -1,14 +1,16 @@
-<?php 
+<?php declare(strict_types = 1);
 
 namespace PHPTv\Commands\Help;
 
-use PHPTv\BaseCommand;
-use PHPTv\Exception;
+use PHPTv\Commands\BaseCommand;
 
-class CommandHelp extends BaseCommand
+final class CommandHelpCommand extends BaseCommand
 {
-    public $keyMapping = 
-    [
+
+    /**
+     * @var array<int, array<string, string>>
+     */
+    public array $keyMapping = [
         [
             'command' => 'raw_forward',
             'description' => 'Send raw commands via IRCC.',
@@ -23,15 +25,10 @@ class CommandHelp extends BaseCommand
         ],
     ];
 
-    /** 
-     * Show the user the current key mapping as a help
-     * This is not automatically generated so you will have to update this method when
-     * changes to the mapping are made.
-     * 
-     * @return void
-     */
-    public function execute(array $args = [])
-    {   
+    /** @param array<string> $args */
+    public function execute(array $args = []): void
+    {
         $this->cli->table($this->keyMapping);
     }
+
 }
